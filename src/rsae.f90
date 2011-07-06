@@ -41,7 +41,7 @@
 !TESTS:        code tested on platform x86_64 SUSE Linux v 11.4
 !FORTRAN SPEC: The layout of this file has been chosen to conform 
 !              with F77's limitation of 72 char per line
-!              (otherwise gfortran must be called).
+!              (otherwise gfortran must be called
 !              with flag: -ffree-form; or with file ext. ".f90"
 !AUTHOR:       Tobias Schoch, June 12, 2011
 !LICENSE:      BSD 2 (i.e., modified, 2-clause Berkeley Software 
@@ -430,7 +430,6 @@ SUBROUTINE drsaebetaiter(n, p, g, k, xmat, yvec, v, d, nsize, acc, &
    DOUBLE PRECISION, INTENT(OUT) :: sumwgt
    INTEGER :: i, coinfo, niter
    DOUBLE PRECISION :: betaold(p)
-   !
    niter = 0
    DO i = 1, iter
       betaold = beta
@@ -611,6 +610,67 @@ SUBROUTINE drsaehubpredict(n, p, g, nsize, k, kappa, d, v, beta, yvec, &
    END DO
 END SUBROUTINE
 !
-!####################################################################
+!====================================================================
+!SUBROUTINE:   drsaehubvariance
+!PART OF:      rsaehub
+!DESCRIPTION:  robust prediction of random effects
+!DEPENDENCY:   dsqrtinvva, dsyrk(BLAS), dtrtri(LAPACK)
+!ON ENTRY:
+!  INTEGER 
+!  REAL 
+!ON RETURN
+!  REAL 
+!--------------------------------------------------------------------
+SUBROUTINE drsaehubvariance(n, p, g, nsize, kappa, v, d, xmat, vcovbeta)
+   IMPLICIT NONE
+   INTEGER, INTENT(IN) :: n, p, g
+   INTEGER, INTENT(IN) :: nsize(g)
+   DOUBLE PRECISION, INTENT(IN) :: kappa, d, v
+   DOUBLE PRECISION, INTENT(IN) :: xmat(n, p)
+   DOUBLE PRECISION, INTENT(OUT) :: vcovbeta(p, p)
+   INTEGER :: info
+   DOUBLE PRECISION :: modx(n, p)
+   DOUBLE PRECISION :: mxtmx(p, p), fmxtmx(p, p)
+   vcovbeta = 0D0
+   mxtmx = 0D0
+   modx = xmat
+   CALL dsqrtinvva(n, p, g, nsize, d, v, 0, modx)
+   CALL dsyrk("U", "T", p, n, 1D0, modx, n, 0D0, mxtmx, p)
+   fmxtmx = mxtmx
+   CALL dconvumtofull(p, fmxtmx) 
+   CALL dpotrf("U", p, fmxtmx, p, info)
+   IF (info == 0) THEN
+      CALL dpotri("U", p, fmxtmx, p, info)
+      IF (info == 0) THEN
+         vcovbeta = fmxtmx
+      ELSE
+         vcovbeta = info*1D0
+      END IF
+   ELSE
+      vcovbeta = info*1D0
+   END IF
+END SUBROUTINE
+!====================================================================
+!SUBROUTINE:   dconvumtofull
+!PART OF:      sct
+!DESCRIPTION:  convert a upper triagular matrix to a full matrix
+!ON ENTRY:
+!  INTEGER n(1)
+!  REAL mat(n, n) 
+!ON RETURN
+!  REAL mat(n, n)
+!--------------------------------------------------------------------
+SUBROUTINE dconvumtofull(n, mat) 
+   IMPLICIT NONE
+   INTEGER, INTENT(IN):: n
+   DOUBLE PRECISION, INTENT(INOUT) :: mat(n, n)
+   INTEGER :: i, j
+   DO i = 2, n
+      DO j = 1, (i - 1)
+         mat(i, j) = mat(j, i)
+      END DO
+   END DO
+END SUBROUTINE 
+!!####################################################################
 ! EOF rsae.f90
 !#################################################################### 

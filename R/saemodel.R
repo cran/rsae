@@ -45,8 +45,9 @@ function(formula, area, data, type="b", na.omit=FALSE){
       attr(model, "areaNames") <- areaNames
       # additional stuff
       pf <- paste(formula)
-      fixeff.string <-  paste(pf[[2]], " ~ ", paste(colnames(X), collapse=" + "), sep="")
-      raneff.string <- paste(area[[2]])
+      areadef <- paste(area[[2]])
+      xnames <- colnames(X)
+      yname <- pf[[2]]
    }
    # Rao's model type a (Fay-Herriot model, known variances must be given as argument of area)
    if (type == "a" | type == "A"){
@@ -54,7 +55,9 @@ function(formula, area, data, type="b", na.omit=FALSE){
       stop("not inplemented, yet! \n")
    }
    # build the model
-   attr(model, "strings") <- list(fixeff.string=fixeff.string, raneff.string=raneff.string)
+   attr(model, "yname") <- yname 
+   attr(model, "xnames") <- xnames
+   attr(model, "areadef") <- areadef
    attr(model, "call") <- match.call()
    class(model) <- "saemodel"
    return(model)

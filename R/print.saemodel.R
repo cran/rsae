@@ -4,8 +4,10 @@ function(x, ...){
    if (is.null(attr(x, "contam"))){
       cat("SAE MODEL TYPE: B (J.N.K. Rao's classification)\n")
       cat("--- \n")
-      cat("FIXED EFFECTS: ", attr(x, "strings")$fixeff.string, "\n")
-      cat("AREA-SPECIFIC RANDOM EFFECTS: ", attr(x, "string")$raneff.string,"\n")
+
+      cat(paste("FIXED EFFECTS: ", attr(x, "yname"), " ~ ", paste(attr(x, "xnames"), collapse=" + "), sep=""), "\n")
+      cat(paste("AREA-SPECIFIC RANDOM EFFECTS: ", attr(x, "areadef"), sep=""), "\n")
+
    }else{
       skeleton <- attr(x, "contam")$skeleton
       cat("SAE MODEL TYPE: B (J.N.K. Rao's classification)\n")

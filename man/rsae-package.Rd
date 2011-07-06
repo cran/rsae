@@ -12,7 +12,7 @@ Computes robust basic unit- and area-level and predicts area-specific means
 \tabular{ll}{
 Package: \tab rsae\cr
 Type: \tab Package\cr
-Version: \tab 0.1-2\cr
+Version: \tab 0.1-3\cr
 Date: \tab 2011-07-06\cr
 Suggests: \tab robustbase, nlme\cr
 License: \tab GPL (>=2) | FreeBSD\cr

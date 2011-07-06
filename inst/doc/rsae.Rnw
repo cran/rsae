@@ -6,6 +6,7 @@
 \usepackage{booktabs}
 \usepackage[authoryear]{natbib}
 \usepackage{url}
+\usepackage[utf8]{inputenc}
 
 \setlength{\oddsidemargin}{1cm}
 \setlength{\textwidth}{15cm}
@@ -129,7 +130,7 @@
 
 \title{Robust Small Area Estimation: a Vignette}
 \author{Tobias Schoch\thanks{Contact: Tobias Schoch, University of Applied Sciences Northwestern Switzerland, Riggenbachstrasse 16, CH-4600 Olten, Switzerland; e-mail: tobias.schoch@fhnw.ch; phone: +41 62 286 01 47.}}
-\date{July 1, 2011}
+\date{July 25, 2011: rsae 0.1-3}
 %\address{University of Applied Sciences Northwestern Switzerland}
 
 \begin{document}
@@ -151,14 +152,14 @@ The \texttt{rsae} package offers functions to estimate
 \begin{itemize}
    \item Huber-type $M$-estimation, using a slight generalization of Huber's Proposal 2 to estimate the variance components; cf., \citet{richardsonwelsh1995}, \citet{sinharao2009}, \citet{schoch2011},
    %
-   \item \textit{variance/MSE estimation [testing phase; floating-point arithmetic problems]}
+   \item variance estimation and MSPE estimation (parametric bootstrap; see \citet{sinharao2009})
    %
    \item \textit{robust high-breakdown point $S$-estimation [testing phase, expected release for SAE conference 2011]},
    %
    \item \textit{robust simple and minimal-iterative methods using fast-LTS and a MED-MAD strategy.[under development]}
 \end{itemize}
 
-\noindent (Robust estimating methods for model B will be released in the near future)
+\noindent (Robust estimating methods for model type "a" will be released in the near future)
 
 \noindent \textbf{NOTE:} In order to use the full functionality of \textbf{rsae}, I recommend to install the \textbf{robustbase} package.
 
@@ -303,9 +304,12 @@ mlfit
 \noindent Note that the layout of the output is similar to the one of the \texttt{lme} (linear mixed-effects model) function in the \texttt{nlme} package \citep[cf.][]{pinheirobates2011}. In particular, the output on the random-effects part mimicks what the \texttt{print} methods reports for \texttt{lme} (i.e., \texttt{$\sim$1|Countyname}). 
 
 
-To learn more about the fit, we may call the \texttt{summary} method. The properties of the model summary will be discussed in the context of Huber-type $M$-estimation (see below). 
+To learn more about the fit, we may call the \texttt{summary} method. In particular, the model summary supplies us with inferential statistics of fixed effects.
 
-%Another important tool is the \texttt{residuals} function. It extracts the residuals (\texttt{res}), the standardized residuals (\texttt{stdres=}$\matv^{-1/2}$ \texttt{res}), and the robustness weights, \texttt{wgt}, of the Huber $\psi$-function associated with \texttt{stdres}.
+<<>>=
+summary(mlfit)
+@
+
 
 %------------------------------------------------
 \subsubsection{When the ML estimator does not converge}
@@ -313,10 +317,22 @@ To learn more about the fit, we may call the \texttt{summary} method. The proper
 Now, we deliberately set the number of outer-loop iterations to one, in order to show the model report, when the algorithm fails to converge. 
 
 <<>>=
-fitsaemodel("ml", bhfmodel, niter=1)
+failconvg <- fitsaemodel("ml", bhfmodel, niter=1)
 @
 
-\noindent Obviously, \texttt{niter=1} is a bad choice. Now, it may happen that the ML-method of \texttt{fitsaemodel} does not converge (even if the parameters have not been modified). A remedy is to initialize the ML method by a regression $S$-estimator (sic!), calling \texttt{fitsaemodel} with \texttt{init="s"}. Obviously, this approach is not optimal in terms of computing time. Nonetheless, by this specification, \texttt{fitsaemodel} enters the "safe mode" of robust Huber-type $M$-estimation and applies several checks whether the algorithm behaves well (these checks are ignored in the default mode). 
+\noindent Here is the report
+
+<<>>=
+failconvg
+@
+
+\noindent Obviously, \texttt{niter=1} is a bad choice. Nontheless, we follow the hint and call the \texttt{convergence} method:
+
+<<>>=
+convergence(failconvg)
+@
+
+\noindent Now, it may happen that the ML-method of \texttt{fitsaemodel} does not converge (even if the parameters have not been modified). A remedy is to initialize the ML method by a regression $S$-estimator (sic!), calling \texttt{fitsaemodel} with \texttt{init="s"}. Obviously, this approach is not optimal in terms of computing time. Nonetheless, by this specification, \texttt{fitsaemodel} enters the "safe mode" of robust Huber-type $M$-estimation and applies several checks whether the algorithm behaves well (these checks are ignored in the default mode). 
 
 %------------------------------------------------
 \subsubsection{When the mixed linear model is not appropriate}
@@ -383,29 +399,32 @@ huberfit <- fitsaemodel("huberm", bhfmodel, k=1.5)
 huberfit
 @
 
-To learn more about the fit, namely about the number of iterations and the robustness properties, we shall call the \texttt{summary} method.
+To learn more about the fit, we shall call the \texttt{summary} method.
 
 <<echo=TRUE>>=
 summary(huberfit)
 @
 
-\noindent The output is by default separated into 4 blocks when the algorithm converged. In the case of non-convergence, the report is slightly adapted. 
+
+\noindent The output is by default separated into 2 blocks when the algorithm converged.
+\begin{itemize}
+   \item Block 1 reports some inferential statistics of the fixed-effects part.
+   \item Block 2 reports the degree of down-weighting outlying residuals at the final iteration. 
+   The degree of down-weighting is reported for all estimating equations (EE) separately. In general $d=1$, if no down-weighting took place. Conversely, the smaller $d$, the more outlying residuals have been down-weighted (and/or the same outliers are heavier down-weighted).
+\end{itemize}
+
+
+In addition, the \texttt{convergence} method supplies us with a report on the convergence of the method. 
+
+<<>>=
+convergence(huberfit)
+@
+
+\noindent It consist of the following blocks:
 
 \begin{itemize}
-   \item Block 1 reports general information on the method and the robustness tuning constant(s).
-   \item Block 2 reports the degree of down-weighting outlying residuals at the final iteration. 
-
-%Denote by $\vbeta^{(s)}$ the value of the fixed-effect coefficient vector at the $s$th (say, final) iteration. The definitions for $v_e^{(s)}$ and $v_u^{(s)}$, the model-error variance and (area-level) random-effect variance estimates, respectively, are analogous. Now, denote by $r_{i,j}^{(s)}$ the (standardized) residual computed with the parameter estimates at the $s$th iteration (i.e., $ \vbeta^{(s)}, v_e^{(s)}, v_u^{(s)}$), $j=1,\ldots,n_i$, $i=1,\ldots,g$. The degree of down-weighting, $d$, is defined as
-
-%\begin{equation}
-%   d =  \biggl[\sum_{i=1}^g n_i \biggr]^{-1}\sum_{i=1}^g\sum_{j=1}^{n_i} \frac{\psi_k\bigl[r_{i,j}^{(s)}\bigr]}{r_{i,j}^{(s)}}, \nonumber
-%\end{equation}
-
-%where $\psi_k(\cdot)$ is the Huber $\psi$-function, indexed by the robustness tuning constant $k$.
-The degree of down-weighting is reported for all estimating equations (EE) separately. In general $d=1$, if no down-weighting took place. Conversely, the smaller $d$, the more outlying residuals have been down-weighted (and/or the same outliers are heavier down-weighted).
-
-   \item Block 3 reports the default or user-specified max number of iterations, \texttt{niter}, and the numeric tolerance, \texttt{acc}, used in the termination rule of the algorithms. 
-   \item Block 4 reports the number of iterations that each of the estimating equation--specific (EE-specific) loops (aka inner loops) and the overall loop (aka outer loop) used to conform to the termination rule. Each row in the table represents a single run of the overall loop. In the example, the algorithm needed 7 overall loops. The entries of a row refer to the EE-specific number of iterations in a particular overall loop. 
+   \item Block 1 reports the default or user-specified max number of iterations, \texttt{niter}, and the numeric tolerance, \texttt{acc}, used in the termination rule of the algorithms. 
+   \item Block 2 reports the number of iterations that each of the estimating equation--specific (EE-specific) loops (aka inner loops) and the overall loop (aka outer loop) used to conform to the termination rule. Each row in the table represents a single run of the overall loop. In the example, the algorithm needed 7 overall loops. The entries of a row refer to the EE-specific number of iterations in a particular overall loop. 
 
 It is evident that the number of (inner-loop) iterations for \texttt{fixeff} and \texttt{residual var} become smaller, the higher the number of outer/overall loops. This is not (and will never be) the case for \texttt{area raneff var} because it is obtained using a different optimization method. 
 
@@ -455,12 +474,17 @@ However, \citet{schoch2011} showed that robust predictions of the random effects
 The workhorse function for (robust) prediction is given by
 
 \begin{verbatim}
-robpredict(fit, k, areadata=NULL)
+robpredict(fit, areameans=NULL, k=NULL, reps=NULL)
 \end{verbatim}
 
-\noindent where \texttt{fit} is a fitted model (an object produced by \texttt{fitsaemodel}),  \texttt{k} is the robustness-tuning constant (of the Huber $\psi$-function) for robust prediction. The robustness-tuning constant \texttt{k} does not necessarily be the same as the one used in \texttt{fitsaemodel}. Further, choosing \texttt{k} sufficiently large (e.g., \texttt{k=20000} should work in (almost) all situations), \texttt{robpredict} produces the usual EBLUP predictions. If \texttt{areadata=NULL} (the default setting), the prediction is based on the same data that have been used for the model fitting exercise (i.e., within-sample prediction). However, in the SAE context, we are usually interested in (robustly) predicting the small-area means. Therefore, we deliver the area-specific population means through  \texttt{areadata}.
+\noindent where \texttt{fit} is a fitted model (an object produced by \texttt{fitsaemodel}),  \texttt{k} is the robustness-tuning constant (of the Huber $\psi$-function) for robust prediction.  By default \texttt{k} is \texttt{NULL} which means that the procedure takes the same \texttt{k} as has been used for estimating the parameters of the core model. The robustness-tuning constant \texttt{k} does not necessarily be the same as the one used in \texttt{fitsaemodel}. Further, choosing \texttt{k} sufficiently large (e.g., \texttt{k=20000} should work in (almost) all situations), \texttt{robpredict} produces the usual EBLUP predictions.
+If \texttt{areameans=NULL} (the default setting), the prediction is based on the same data that have been used for the model fitting exercise (i.e., within-sample prediction). However, in the SAE context, we are usually interested in (robustly) predicting the small-area means. Therefore, we deliver the area-specific population means through  \texttt{areameans}. 
 
-In the \texttt{landsat} example, the county-specific population means of pixels of the segments under corn and soybeans are recorded in the variables \texttt{MeanPixelsCorn} and \texttt{MeanPixelsSoybeans}, respectively. Note that each sample segment in a particular county has assigned the county-specific mean (in the \texttt{landsat} data). Therefore, each population mean of the variables \texttt{MeanPixelsCorn} and \texttt{MeanPixelsSoybeans} occurs $n_i$ times. The unique county-specific are obtained using 
+In addition, the \texttt{robpredict} function can compute area-specific mean squared prediction errors (MSPE) by means of a (robust) parametric bootstrap method; see \citet{sinharao2009}. In order to obtain MSPE, we need to specify the number of bootstrap replicates, \texttt{reps}. 
+
+\noindent \textbf{NOTICE:} I recommend to start with relatively small values of \texttt{reps}, e.g., \texttt{reps=100}, since large values of \texttt{reps} are associated with a large computational effort. Once you get an intuition of how much time the algorithm consumes, you can try larger values of \texttt{reps}.
+
+In the \texttt{landsat} example, the county-specific population means of pixels of the segments under corn and soybeans are recorded in the variables \texttt{MeanPixelsCorn} and \texttt{MeanPixelsSoybeans}, respectively. Note that each sample segment in a particular county has assigned the county-specific mean (in the \texttt{landsat} data). Therefore, each population mean of the variables \texttt{MeanPixelsCorn} and \texttt{MeanPixelsSoybeans} occurs $n_i$ times. The unique county-specific population means are obtained using 
 
 <<>>=
 d <- unique(landsat[-33, c("MeanPixelsCorn", "MeanPixelsSoybeans", "CountyName")])
@@ -476,10 +500,10 @@ d
 
 \noindent The first column of \texttt{d} is a dummy variable (the \texttt{bhfmodel} has an intercept term). The second and third column represent the county-specific population means of segments under corn and soybeans (the rows of the above table are labeled with the county names).
 
-Next, we consider predicting the random and fixed effects and the county means. Note that we choose \texttt{k=10000}. This leads to results that are equivalent to those of the standard EBLUP, and therefore not robust.
+Next, we consider predicting the random and fixed effects and the county means. Note that we do not explicitly specify \texttt{k}. This means that the procedure uses the same \texttt{k} as the one that has been used for robust estimation (here, the model has been estimated by \texttt{method="ml"} which is equivalent to $k=\infty$). MSPE is obtained using 500 bootstrap replicates.
 
 <<>>=
-pr <- robpredict(mlfit, k=10000, areadata=d)
+pr <- robpredict(mlfit, areameans=d, reps=500)
 @
 
 \noindent The results are
@@ -491,6 +515,29 @@ pr
 
 <<fig=TRUE>>=
 plot(pr)
+@
+
+
+\noindent another plot, but with lines; here the predicted means are sorted in ascending order
+<<fig=TRUE>>=
+plot(pr, type="l", sort="means")
+@
+
+
+Once the area-specific random effects have been predicted (by means of robust methods), we can have a look at the residuals. Note that the residuals are given by 
+
+\begin{equation}
+r_{i,j}=y_{i,j} - \vx_{i,j}^T\hat{\vbeta}^{R} - \hat{u}_{i}^{R}, 
+\end{equation}
+
+\noindent where the superscript $R$ highlights the fact that robust estimates/predictions are used. Obviously, since the residuals depend on $\hat{u}_{i}^R$ (which is depends itself on the user-specified robustness-tuning constant), a residual analysis can only take place subsequent to robustly predicting $u_i$. This is contrast to the standard ML (or REML) case where $\hat{u_i}$ is readily availabe having estimated the fixed- and random-effects parameters.
+
+The residualy may be used for an \texttt{QQ-plot}. (Note that \texttt{bhfmodel} is not optimal in terms of the tail behavior of the residuals)
+
+<<fig=TRUE>>=
+res <- residuals(pr)
+qqnorm(res)
+qqline(res)
 @
 
 %================================================

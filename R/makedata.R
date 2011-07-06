@@ -42,10 +42,10 @@ function(seed=1024, intercept=1, beta=1, n=4, g=20, areaID=NULL, ve=1, ve.contam
    }else{
       # contaminated observations
       outliers <- sample(1:N, floor(ve.epsilon*N))
-      y[outliers] <- rnorm(length(outliers), 0, sqrt(ve.contam))
+      y[outliers] <- y[outliers] + rnorm(length(outliers), 0, sqrt(ve.contam))
       # un-contaminated observations
       non.outliers <- setdiff(1:N, outliers)
-      y[non.outliers] <- rnorm(length(non.outliers), 0, sqrt(ve))
+      y[non.outliers] <- y[non.outliers] + rnorm(length(non.outliers), 0, sqrt(ve))
    }
    # y as list
    y.list <- split(y, areaID)
@@ -68,9 +68,9 @@ function(seed=1024, intercept=1, beta=1, n=4, g=20, areaID=NULL, ve=1, ve.contam
    # prepare return value
    res <- list(y=y, X=x, areaID=areaID, nsize=n, g=g, p=p, n=N, intercept=hasintercept) 
    attr(res, "areaNames") <- paste(rep("A", g), 1:g, sep="")
-   fixeff.string <- paste("y ~ ", paste(beta.names, collapse=" + "), sep="") 
-   raneff.string <- paste("area-specific ranef") 
-   attr(res, "strings") <- list(fixeff.string=fixeff.string, raneff.string=raneff.string)
+   attr(res, "areadef") <- paste("area-specific ranef") 
+   attr(res, "yname") <- "y"
+   attr(res, "xnames")<- beta.names 
    attr(res, "call") <- match.call() 
    class(res) <- "saemodel"
    # additional attributes (do not belong to the "saemodel" class)

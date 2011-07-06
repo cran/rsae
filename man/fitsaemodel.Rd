@@ -3,6 +3,8 @@
 \alias{print.fitsaemodel}
 \alias{summary.fitsaemodel}
 \alias{coef.fitsaemodel}
+\alias{convergence}
+
 
 \title{
 Fit SAE model using various methods
@@ -14,8 +16,10 @@ Fit SAE model using various methods
 \usage{
 fitsaemodel(method, model, ...)
 
+convergence(object)
+
 \method{print}{fitsaemodel}(x, digits=3, ...)
-\method{summary}{fitsaemodel}(object, full=FALSE, digits=3, ...)
+\method{summary}{fitsaemodel}(object, digits=3, ...)
 \method{coef}{fitsaemodel}(object, type="both", ...)
 }
 
@@ -34,9 +38,6 @@ used by the \code{print} and \code{summary} methods; number of decimal places to
 }
   \item{object}{
 an object of the class \code{"\link{fitsaemodel}"}; i.e., a fitted model
-}
-  \item{full}{
-logical, if \code{full=TRUE}, the \code{summary} method shows all it has to show  (default: \code{full=FALSE})
 }
   \item{type}{
 character string use in the \code{coef} method; it can take one of the following possibilities: \code{"both"}, \code{"ranef"}, or \code{"fixef"}. The first reports both, random and fixed effects (default). 

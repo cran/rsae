@@ -11,10 +11,10 @@ Robust prediction of random effects, fixed effects, and area-specific means
 Robust prediction of random effects, fixed effects, and area-specific means. It can predict based on new, directly delivered, areadata. 
 }
 \usage{
-robpredict(fit, k, areadata=NULL)
+robpredict(fit, areameans=NULL, k=NULL, reps=NULL)
 
 \method{print}{meanssaemodel}(x, digits=4, ...)
-\method{plot}{meanssaemodel}(x, y=NULL, sort=NULL, ...)
+\method{plot}{meanssaemodel}(x, y=NULL, type="e", sort=NULL, ...)
 \method{residuals}{meanssaemodel}(object, ...)
 }
 
@@ -22,12 +22,16 @@ robpredict(fit, k, areadata=NULL)
   \item{fit}{
 a fitted SAE model; object of class \code{fitsaemodel}
 }
-  \item{k}{
-robustness tuning constant (of the Huber psi-function) for robust prediction. Notice that \code{k} does not necessarily be the same as the \code{k} that has been used in \code{fitsaemodel}. 
-}
-   \item{areadata}{
+   \item{areameans}{
    numeric matrix (typically, with area-level means); the no. of rows must be equal to the no. of areas; the no. of columns must be equal to the no. of fixed-effects coefficients (incl. intercept). By default: \code{areadata=NULL}, i.e., predictions are based on those data that have been used to estimate the model.
 }
+  \item{k}{
+robustness tuning constant (of the Huber psi-function) for robust prediction. Notice that \code{k} does not necessarily be the same as the \code{k} that has been used in \code{fitsaemodel}. By default, \code{k} is equal to the tuning constant used in estimating the model parameters. 
+}
+  \item{reps}{
+no. of bootstrap replicates for mean squared prediction error; default: \code{reps=NULL}
+}
+
    \item{x}{
 object of the class \code{"meanssaemodel"}; this argument is only used in the \code{print} method.
 }
@@ -36,6 +40,9 @@ integer, defining the number of decimal places to be shown in the \code{print} m
 }
    \item{y}{
 has no meaning, yet! (default: \code{y=NULL}; needs to included in the args list, because it is part of plot's generic arg definition)
+}
+   \item{type}{
+character specifying the \code{plot} method; either \code{"e"} (error bars; default) or \code{"l"} (lines).
 }
    \item{sort}{
 only used in the \code{plot} method; if \code{sort="means"}, the predicted means are ploted in ascending order (default: \code{sort=NULL}); similarly, with \code{sort="fixef"} and \code{sort="ranef"} the predicted means are sorted along the fixed effects or the random effects, respectively
@@ -72,7 +79,5 @@ summary(myfittedmodel)
 #Here, we choose the robustness tuning constant k equal to 1.8
 mypredictions <- robpredict(myfittedmodel, k=1.8)
 mypredictions
-#a visual display of the area-specific predictions
-plot(mypredictions)
 }
 

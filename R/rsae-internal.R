@@ -79,7 +79,15 @@ function(method, model, k, control=fitsaemodel.control(...), ...){
    }else{
       tau <- tmp$tau
    }
-   res <- list(beta=tau[1:p], theta=c(tau[p+1], tau[p+1]*tau[p+2]), converged=converged)
+   #compute the covariance matrix of the fixed effects
+   if (converged == 1){
+      vcovbeta <- matrix(0, p, p)
+      o = .Fortran("drsaehubvariance", n=as.integer(n), p=as.integer(p), g=as.integer(g), nsize=as.integer(nsize), kappa=as.double(kappa), v=as.double(tau[p+1]), d=as.double(tau[p+2]), xmat=as.matrix(x), vcovbeta=as.matrix(vcovbeta))
+      vcovbeta <- o$vcovbeta
+   }else{
+      vcovbeta <- NULL
+   }
+   res <- list(beta=tau[1:p], theta=c(tau[p+1], tau[p+1]*tau[p+2]), converged=converged, vcovbeta=vcovbeta)
    #additional attributes
    attr(res, "call") <- match.call()
    attr(res, "optim") <- list(acc=c(allacc, acc), niter=c(niter, iter), usediter=tmp$iterrecord, tau=tmp$taurecord)
@@ -134,5 +142,39 @@ function(model, init, ...){
       result <- as.numeric(c(tmp$coefficients, tmp$scale^2, 1))
    }
    return(result)
+}
+
+.mspe <-
+function(fit, reps, areameans, fixeff){
+   #fitted-model attrs 
+   #as scale not variance, since rnorm wants it like that
+   theta <- sqrt(fit$theta)
+   beta <- fit$beta
+   #model attrs
+   model <- attr(fit, "saemodel")
+   X <- as.matrix(model$X)
+   Xbeta <- X %*% beta
+   n <- model$n
+   g <- model$g
+   nsize <- model$nsize
+   #
+   predicts <- matrix(NA, reps, g)
+   # 
+   for (j in 1:reps){
+      #draw model error, e
+      e <- rnorm(n, 0, theta[1])
+      #draw raneff, v
+      v <- unlist(sapply(nsize, function(u) rep(rnorm(1, 0, theta[2]), u), simplify=TRUE))
+      #modify pred (add random effec)
+      predrf <- fixeff +  (unique(v))# * as.double(nsize))
+      #generate bootstrap samples (and fix it to the model)
+      model$y <- Xbeta + e + v 
+      #compute the model parameters using ml
+      tmp <- fitsaemodel("ml", model)
+      #predict 
+      predicts[j, ] <- t(robpredict(tmp, areameans, k=20000, reps=NULL)$means) - t(predrf)
+   }
+   res <- colMeans(predicts^2)
+   return(res)
 }
 

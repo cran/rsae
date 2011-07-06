@@ -3,7 +3,9 @@ function (x, digits=3, ...){
    saemodel <- attr(x, "saemodel")
    # check whether the model converged
    if (x$converged == 1){
-      strings <- attr(saemodel, "strings")
+      yname <- attr(saemodel, "yname")
+      xnames <- attr(saemodel, "xnames")
+      areadef <- attr(saemodel, "aredef")
       # retrieve the estimating method
       method <- attr(x, "method") 
       cat("ESTIMATES OF SAE-MODEL (model type B) \n")
@@ -21,17 +23,17 @@ function (x, digits=3, ...){
       }
       cat("---\n")
       cat("Fixed effects\n")
-      cat("  Model: ", strings$fixeff.string, "\n")
+      cat(paste("Model: ", yname, " ~ ", paste(xnames, collapse=" + "), sep=""), "\n")
       cat("  Coefficients: \n")
       beta <- x$beta
-      names(beta) <- colnames(saemodel$X)
+      names(beta) <- xnames
       if (saemodel$intercept == 1){
 	 names(beta)[1] <- "(Intercept)"
       }
       print.default(format(beta, digits = digits), print.gap = 2, quote = FALSE)
       cat("--- \n")
       cat("Random effects \n")
-      cat("  Model: ~1 | ", strings$raneff.string, "\n")
+      cat(paste("  Model: ~1| ", areadef, sep=""), "\n")
       # warn if the raneff variance is almost zero
       if (x$theta[2] <= .Machine$double.eps^(1/4)){
 	 cat("---\n")
@@ -53,7 +55,7 @@ function (x, digits=3, ...){
       #not converged
       cat("THE METHOD DID NOT CONVERGE!\n")
       cat("---\n")
-      cat("  1) use summary() of your fitted model to learn more \n")
+      cat("  1) use convergence() of your fitted model to learn more \n")
       cat("  2) study the documentation using the command ?fitsaemodel \n")
       cat("  3) you may call fitsaemodel with 'init' equal to (either) 'lts'\n")
       cat("     or 's' (this works also for ML, though it may no be very efficient)\n")
