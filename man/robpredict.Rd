@@ -8,7 +8,8 @@
 Robust prediction of random effects, fixed effects, and area-specific means
 }
 \description{
-Robust prediction of random effects, fixed effects, and area-specific means. It can predict based on new, directly delivered, areadata. 
+The function \code{robpredict} robustly predicts the random effects, fixed effects, and area-specific means under the model. As concerned with robustly predicting the realizations of the random effects, we rely on the method of Copt and Victoria-Feser (cf. Heritier et al., 2009, 113--114); not the method of Sinha and Rao (2009).
+
 }
 \usage{
 robpredict(fit, areameans=NULL, k=NULL, reps=NULL)
@@ -29,7 +30,7 @@ a fitted SAE model; object of class \code{fitsaemodel}
 robustness tuning constant (of the Huber psi-function) for robust prediction. Notice that \code{k} does not necessarily be the same as the \code{k} that has been used in \code{fitsaemodel}. By default, \code{k} is equal to the tuning constant used in estimating the model parameters. 
 }
   \item{reps}{
-no. of bootstrap replicates for mean squared prediction error; default: \code{reps=NULL}
+number (integer) of bootstrap replicates for mean squared prediction error; default: \code{reps=NULL}
 }
 
    \item{x}{
@@ -55,13 +56,31 @@ not used
 }
 }
 \details{
-Given the robustly estimated SAE model, one considers robustly predicting the random- and fixed effect (and the final area-specific means). The tuning constant \code{k} regulates the degree of robustness when predicting the random effects. 
+The \code{robpredict} function enables the following modes of prediction:
+
+\itemize{
+   \item if \code{areameans=NULL}, then the predictions are exclusively based on the sample values,
+   \item if \code{robpredict} is called with \code{areameans} (i.e., matrix with area-specific means of the auxiliary data of conformable size), then the fixed-effect predictions and thus also the predictions of the area-specific means are based on the auxiliary data,
+   \item if, in addition to specifying \code{areameans}, one specifies also the number of bootstrap replications (i.e., \code{reps}; some positive integer), the function computes area-specific mean square prediction error (MSPE) estimates for the area-level means. The MSPE is obtained, in line with Sinha and Rao (2009), from a (robust) parametric bootstrap; see Lahiri (2003) and Hall and Maiti (2006) for more details.
+}
+
+The tuning constant \code{k} regulates the degree of robustness (i.e., degree of winsorization of the Huber psi-function) when predicting the random effects. If \code{k} is sufficiently large (ideally, if \code{k} is equal to infinity), the predictions correspond to the EBLUP. 
+
 }
 \value{
 Instance of the S3 class \code{meanssaemodel}
 }
 \references{
-Schoch, T. (2011) \emph{The robust basic unit-level small area model. A simple and fast algorithm for large datasets}, in: Proceedings of the New Technologies and Techniques Conference (NTTS), EUROSTAT, Brussels.
+
+Copt, S. and M.-P. Victoria-Feser (2009): \emph{Robust Predictions in Mixed Linear Models}, Research Report, University of Geneva.
+
+Lahiri, P. (2003): On the impact of bootstrap in survey sampling and small area estimation. \emph{Statistical Science} 18, 199--210.
+
+Hall, P. and T. Maiti (2006): On parametric bootstrap methods for small area prediction. \emph{Journal of the Royal Statistical Society. Series B}, 68, 221--238.
+
+Heritier, S., Cantoni, E., Copt, S., and M.-P. Victoria-Feser (2009): \emph{Robust methods in biostatistics}. New York: John Wiley and Sons.
+
+Sinha, S.K. and J.N.K. Rao (2009): Robust Small Area Estimation. \emph{The Canadian Journal of Statistics} 37, 381--399.
 }
 \author{
 Tobias Schoch

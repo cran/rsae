@@ -56,7 +56,7 @@ scalar, defining the relative number of outliers in the contamination mixture di
 \details{
 The function \code{makedata} generates synthetic datasets that may be used to study the behavior of different estimating methods. Let \eqn{y_i} denote an area-specific \eqn{n_i}-vector of the response variable for the areas \eqn{i=1,...,g}. Define a \eqn{(n_i \times p)}-matrix \eqn{X_i} of realizations from the std. normal distribution, \eqn{N(0,1)}, and let \eqn{\beta} denote a \eqn{p}-vector of regression coefficients. Now, the \eqn{y_i} are drawn using the law \eqn{y_i \sim N(X_i\beta, v_e I_i + v_u J_i)} with \eqn{v_e} and \eqn{v_u} the variances of the model error and random-effect variance, respectively, and \eqn{I_i} and \eqn{J_i} denoting the identity matrix and matrix of ones, respectively.
 
-In addition, we allow the distribution of the model/residual and area-level random effect to be contaminated (cf., Stahel and Welsh, 1997). Notably, the laws of \eqn{e_{i,j}} and \eqn{u_i} are replaced by the Tukey-Huber contamination mixture:
+In addition, we allow the distribution of the model/residual and area-level random effect to be contaminated (cf. Stahel and Welsh, 1997). Notably, the laws of \eqn{e_{i,j}} and \eqn{u_i} are replaced by the Tukey-Huber contamination mixture:
 
    \itemize{
       \item \eqn{e_{i,j} \sim (1-\epsilon^{ve})N(0,v_e) + \epsilon^{ve}N(0, v_e^{\epsilon})},
@@ -79,7 +79,7 @@ Four different contamination setups are possible:
 Instance of the class \code{saemodel}.
 }
 \references{
-Stahel, W.A. and A. Welsh (1997) \emph{Approaches to robust estimation in the simplest variance components model}, Journal of Inference and Statistical Planning 57, pp. 295-319.
+Stahel, W.A. and A. Welsh (1997): Approaches to robust estimation in the simplest variance components model, \emph{Journal of Inference and Statistical Planning} 57, pp. 295-319.
 }
 \author{
 Tobas Schoch

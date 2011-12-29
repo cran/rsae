@@ -1,24 +1,22 @@
 print.fitsaemodel <-
-function (x, digits=3, ...){
+function (x, digits=6, ...){
    saemodel <- attr(x, "saemodel")
    # check whether the model converged
    if (x$converged == 1){
       yname <- attr(saemodel, "yname")
       xnames <- attr(saemodel, "xnames")
-      areadef <- attr(saemodel, "aredef")
+      areadef <- attr(saemodel, "areadef")
       # retrieve the estimating method
       method <- attr(x, "method") 
       cat("ESTIMATES OF SAE-MODEL (model type B) \n")
       cat("Method: ", method$type, "\n")
       # branch: robust vs. non-robust methods
       if (length(method) > 1){
-	 tuning <- method$tuning
+	 tuning <- method$tuning$k
 	 if (length(tuning) == 1){
-	    cat(paste("Robustness tuning constant: ",names(tuning), " = ", as.numeric(tuning), "\n"))
+	    cat(paste("Robustness tuning constant: k = ", tuning, "\n"))
 	 }else{
-	    for (i in 1:length(tuning)){
-	       cat(tuning[i], "\n")  
-	    }
+	     cat(paste("Robustness tuning constants: k_beta = ", tuning[1], ", k_v = ", tuning[2], ", k_d = ", tuning[3],"\n", sep=""))
 	 }
       }
       cat("---\n")

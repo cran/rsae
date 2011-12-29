@@ -1,5 +1,5 @@
 fitsaemodel.control <-
-function(niter=40, iter=c(200, 200), acc=1e-5, init="default", ...){
+function(niter=40, iter=c(200, 200), acc=1e-5, dec=0, decorr=0, init="default", ...){
    # define acc
    if (length(acc) != 4){
       acc = rep(acc, 4)
@@ -17,7 +17,11 @@ function(niter=40, iter=c(200, 200), acc=1e-5, init="default", ...){
    eps <- .Machine$double.eps^(1/4) 
    # make them all positive
    init <- switch(init, "default"=0, "lts"=1, "s"=2) 
-   res = list(niter=niter, iter=iter, acc=acc, maxk=maxk, init=init, add=list(...))
+   # define decomposition of the matrix-squareroot (0=SVD; 1=Cholesky)
+   dec <- ifelse(dec == 0, 0, 1)
+   # robustly decorrelate (center by median instead of the mean)
+   decorr <- ifelse(decorr == 0, 0, 1) 
+   res = list(niter=niter, iter=iter, acc=acc, maxk=maxk, init=init, dec=dec, decorr=decorr, add=list(...))
    return(res)
 }
 

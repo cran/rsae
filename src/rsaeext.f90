@@ -34,7 +34,7 @@
 !              interval, otherwise the sub stops
 !DEPENDENCY:   none
 !ON ENTRY:
-!  INTEGER n(1), g(1), nsize(g) 
+!  INTEGER n(1), g(1), nsize(g), dec(1) 
 !  REAL v(1), k(1), kappa(1), lower(1), upper(1), tol(1), res(n)
 !ON RETURN
 !  INTEGER info(1)
@@ -42,25 +42,39 @@
 !--------------------------------------------------------------------
 !
 SUBROUTINE drsaehubdestiter(n, g, nsize, v, k, kappa, res, lower, upper, &
-      tol, zeroin, info) 
+      tol, zeroin, info, dec, decorr) 
    IMPLICIT NONE
-   INTEGER, INTENT(OUT) :: info  
+   !zeroin declarations
+   INTEGER, INTENT(OUT) :: info  !info was not in Richard's original
+   !defintion (since zeroin was a function)
    DOUBLE PRECISION, INTENT(IN) :: lower, upper, tol
    DOUBLE PRECISION, INTENT(OUT) :: zeroin
-   INTEGER, INTENT(IN) :: n, g
+   !foo declarations
+   INTEGER, INTENT(IN) :: n, g, dec, decorr
    INTEGER, INTENT(IN) :: nsize(g)
    DOUBLE PRECISION, INTENT(IN) :: v, k, kappa
    DOUBLE PRECISION, INTENT(IN) :: res(n)
+   !local declarations
    INTEGER, PARAMETER :: ITMAX = 100
    INTEGER :: iter
    DOUBLE PRECISION :: a, b, c, d, e, fa, fb, fc, tol1, xm, p, q, r, s
+   !define a precision constant, cf R .Machine$double.eps for double
+   !data type, i.e., 64bit sized blocks
    DOUBLE PRECISION, PARAMETER :: EPS = 2.3E-16 
+   !initialize
    info = 0
+   !start with checking whether there is a sign change, if not break
    a = lower
    b = upper
-   CALL drsaehubdest(n, g, nsize, a, v, k, kappa, res, fa)
-   CALL drsaehubdest(n, g, nsize, b, v, k, kappa, res, fb)
+   !note that these function calls have been added to Richard's 
+   !original code
+   !compute fa (i.e., evaluation for a = lower)
+   CALL drsaehubdest(n, g, nsize, a, v, k, kappa, res, fa, dec, decorr)
+   !compute fb (i.e., evaluation for b = upper)
+   CALL drsaehubdest(n, g, nsize, b, v, k, kappa, res, fb, dec, decorr)
+   !check that f(lower) and f(upper) have different signs
    IF ((fa > 0D0 .and. fb > 0D0) .or. (fa < 0D0 .and. fb < 0D0)) THEN
+      !return -1; this violates the assumption and therefore be detected
       info = -1
       zeroin = 0D0
    ELSE   
@@ -86,15 +100,19 @@ SUBROUTINE drsaehubdestiter(n, g, nsize, v, k, kappa, res, lower, upper, &
          xm = 5D-1 * (c-b)
          IF (ABS(xm) <= tol1 .or. fb == 0D0) THEN
             zeroin = b
+            !if it converges, then info=# iterations
             info = iter
             EXIT
          END IF
+         ! see if a bisection is forced
          IF (ABS(e) >= tol1 .and. ABS(fa) > ABS(fb)) THEN
             s = fb / fa
             IF (a == c) THEN
+               !linear interpolation
                p = 2D0 * xm * s
                q = 1D0 - s
             ELSE
+               !inverse quadratic interpolation
                q = fa / fc
                r = fb / fc
                p = s * (2D0 * xm * q * (q - r) - (b - a) * (r - 1D0))
@@ -118,9 +136,17 @@ SUBROUTINE drsaehubdestiter(n, g, nsize, v, k, kappa, res, lower, upper, &
          END IF
          a = b
          fa = fb
+         !note merge and sign work that way in gfortran (which may no 
+         !be true
+         !for others; I did not check it)
          b = b + MERGE(d, SIGN(tol1, xm), ABS(d) > tol1)
-         CALL drsaehubdest(n, g, nsize, b, v, k, kappa, res, fb)
+         ! note this function call has been added to Richard's origial
+         !code
+         !eval function at b
+         CALL drsaehubdest(n, g, nsize, b, v, k, kappa, res, fb, dec,&
+            decorr)
       END DO
+      !return b; however, it did not converge, therefore info=0, still 
       zeroin = b
    END IF
 END SUBROUTINE 

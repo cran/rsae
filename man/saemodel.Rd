@@ -54,7 +54,7 @@ Once a model has been initilized/ set up, we consider estimating its parameter; 
 Instance of the S3 class \code{"saemodel"}.
 }
 \references{
-Rao, J.N.K. (2003). \emph{Small Area Estimation}, New York: John Wiley and Sons.
+Rao, J.N.K. (2003): \emph{Small Area Estimation}, New York: John Wiley and Sons.
 }
 \author{
 Tobias Schoch

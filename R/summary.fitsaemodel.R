@@ -1,5 +1,5 @@
 summary.fitsaemodel <-
-function (object, digits=3, ...){
+function (object, digits=6, ...){
    saemodel <- attr(object, "saemodel")
    n <- saemodel$n
    g <- saemodel$g

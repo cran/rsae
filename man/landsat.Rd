@@ -63,7 +63,7 @@ The data \code{landsat} is from Table 1 of Battese et al. (1988, p. 29).
 
 
 \references{
-Battese, G.E, R.M. Harter, and W.A. Fuller (1988) \emph{An Error-Components Model for Prediction of County Crop Areas Using Survey and Satellite Data}, Journal of the American Statistical Association 83, pp. 28--36.  
+Battese, G.E, R.M. Harter, and W.A. Fuller (1988): An Error-Components Model for Prediction of County Crop Areas Using Survey and Satellite Data, \emph{Journal of the American Statistical Association} 83, pp. 28--36.  
 }
 
 \examples{

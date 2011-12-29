@@ -130,7 +130,7 @@
 
 \title{Robust Small Area Estimation: a Vignette}
 \author{Tobias Schoch\thanks{Contact: Tobias Schoch, University of Applied Sciences Northwestern Switzerland, Riggenbachstrasse 16, CH-4600 Olten, Switzerland; e-mail: tobias.schoch@fhnw.ch; phone: +41 62 286 01 47.}}
-\date{July 25, 2011: rsae 0.1-3}
+\date{December 29, 2011: rsae 0.1-4}
 %\address{University of Applied Sciences Northwestern Switzerland}
 
 \begin{document}
@@ -154,9 +154,9 @@ The \texttt{rsae} package offers functions to estimate
    %
    \item variance estimation and MSPE estimation (parametric bootstrap; see \citet{sinharao2009})
    %
-   \item \textit{robust high-breakdown point $S$-estimation [testing phase, expected release for SAE conference 2011]},
+   %\item \textit{robust high-breakdown point $S$-estimation [testing phase, expected release for SAE conference 2011]},
    %
-   \item \textit{robust simple and minimal-iterative methods using fast-LTS and a MED-MAD strategy.[under development]}
+   %\item \textit{robust simple and minimal-iterative methods using fast-LTS and a MED-MAD strategy.[under development]}
 \end{itemize}
 
 \noindent (Robust estimating methods for model type "a" will be released in the near future)
@@ -469,7 +469,7 @@ fitsaemodel("huberm", bhfmodel, k=1.2, init="s")
 \section{Robust prediction}
 Once the parameters of the Gaussian core model have been estimated robustly, we consider (robustly) predicting the random effects. \citet{sinharao2009} proposed to solve the robustified mixed model equations \citep{fellner1986} by a Newton-Raphson-type updating scheme that is obtained from a Taylor-series expansion of the robustified mixed model equations. Consequently, computation is very involved.  
 
-However, \citet{schoch2011} showed that robust predictions of the random effects can be obtained far more easily. Namely, since the robustly estimated parameters of the core Gaussian model determine the model completely, prediction is straightforward.
+However, \citet{schoch2011} showed that robust predictions of the area-specifc means can be obtained far more easily by means of the robust predictor of random effects due to \citet{coptvictoriafeser2009}; see also \citet[113--114][]{heritieretal2009}. Namely, since the robustly estimated parameters of the core Gaussian model determine the model completely, prediction is straightforward.
 
 The workhorse function for (robust) prediction is given by
 
@@ -689,11 +689,15 @@ In this section, I give some details on the installation of \texttt{rsae} on a L
 
 \begin{thebibliography}{---}
 
-\bibitem[Pinheiro et al.(2011)]{pinheirobates2011} Pinheiro, J., D. Bates, S. DebRoy, D. Sarkar and the R Development Core Team (2011): \emph{nlme: Linear and Nonlinear Mixed Effects Models}. R package version 3.1-100.
-
+\bibitem[Copt and Victoria-Feser(2009)]{coptvictoriafeser2009} Copt, S. and M.-P. Victoria-Feser (2009): \emph{Robust Predictions in Mixed Linear Models}. Research Report, University of Geneva.
+%
 \bibitem[Battese et al.(1988)]{batteseetal1988} Battese, G.E., R.M. Harter, and W.A. Fuller (1988): \emph{An Error-Components Model for Prediction of County Crop Areas Using Survey and Satellite Data}, Journal of the American Statistical Association 83, pp. 28-36.
 %
 \bibitem[Fellner(1986)]{fellner1986} Fellner, W. (1986): \emph{Robust estimation of variance components}. Technometrics 28, pp. 51-60.
+%
+\bibitem[Heritier et al.(2009)]{heritieretal2009} Heritier, S., Cantoni, E., Copt, S., and M.-P. Victoria-Feser (2009): \emph{Robust methods in Biostatistics}. New York: John Wiley and Sons.
+%
+\bibitem[Pinheiro et al.(2011)]{pinheirobates2011} Pinheiro, J., D. Bates, S. DebRoy, D. Sarkar and the R Development Core Team (2011): \emph{nlme: Linear and Nonlinear Mixed Effects Models}. R package version 3.1-100.
 %
 \bibitem[R-admin(2011)]{radmin} R-admin (2011): \emph{R Installation and Administration (version 2.13.0)}, ed. by: R Development Core Team, Vienna. URL http.//stat.ethz.ch/CRAN/doc/manuals/R-admin.html. 
 %

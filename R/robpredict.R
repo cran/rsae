@@ -3,6 +3,8 @@ function(fit, areameans=NULL, k=NULL, reps=NULL){
    if (!inherits(fit, "fitsaemodel")) stop("fit must be of class 'fitsaemodel'")
    # get the modelk
    modelk <- attr(fit, "method")$tuning$k
+   # get the decomposition
+   dec <- attr(fit, "dec")
    # for ml, modelk = 20000
    if (is.null(modelk)) modelk <- 20000
    # prediction k (which is not necessarily equal to modelk) 
@@ -33,7 +35,7 @@ function(fit, areameans=NULL, k=NULL, reps=NULL){
    # preparations for fortran-call
    predre <- rep(0, g)
    predfe <- rep(0, g)
-   tmp <- .Fortran("drsaehubpredict", n=as.integer(n), p=as.integer(p), g=as.integer(g), nsize=as.integer(nsize), k=as.double(k), kappa=as.double(kappa), d=as.double(d), v=as.double(v), beta=as.matrix(beta), yvec=as.matrix(y), xmat=as.matrix(x), predfe=as.matrix(predfe), predre=as.matrix(predre))
+   tmp <- .Fortran("drsaehubpredict", n=as.integer(n), p=as.integer(p), g=as.integer(g), nsize=as.integer(nsize), k=as.double(k), kappa=as.double(kappa), d=as.double(d), v=as.double(v), beta=as.matrix(beta), yvec=as.matrix(y), xmat=as.matrix(x), predfe=as.matrix(predfe), predre=as.matrix(predre), dec=as.integer(dec))
    # retrieve the area-level random effects; it is used whether new data is present or not
    raneff <- tmp$predre
    # branch: old vs new data
@@ -60,7 +62,7 @@ function(fit, areameans=NULL, k=NULL, reps=NULL){
    rownames(means) <- areaNames
    # compute the residuals of the model (i.e. e_ij = y_ij - X_ij*beta - u_i)
    vn <- numeric(n)
-   getres <- .Fortran("drsaeresid", n=as.integer(n), p=as.integer(p), g=as.integer(g), nsize=as.integer(nsize), k=as.double(modelk), tau=as.matrix(tau), u=as.matrix(raneff), xmat=as.matrix(x), yvec=as.matrix(y), res=as.matrix(vn), stdres=as.matrix(vn), wgt=as.matrix(vn))
+   getres <- .Fortran("drsaeresid", n=as.integer(n), p=as.integer(p), g=as.integer(g), nsize=as.integer(nsize), k=as.double(modelk), tau=as.matrix(tau), u=as.matrix(raneff), xmat=as.matrix(x), yvec=as.matrix(y), res=as.matrix(vn), stdres=as.matrix(vn), wgt=as.matrix(vn), dec=as.integer(dec))
    #
    result <- list(fixeff=fixeff, raneff=raneff, means=means, res=getres$res, stdres=getres$stdres, wgt=getres$wgt, mspe=mspe)
    attr(result, "robustness") <- k

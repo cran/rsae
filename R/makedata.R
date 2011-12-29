@@ -21,7 +21,7 @@ function(seed=1024, intercept=1, beta=1, n=4, g=20, areaID=NULL, ve=1, ve.contam
 	 x[, i] <- rnorm(N)
       }
    }else{
-      beta <- c(beta, intercept)
+      beta <- c(intercept, beta)
       beta.names <- c("(Intercept)", paste(rep("x", p), 1:p, sep=""))
       x <- matrix(NA, N, (p+1))
       x[, 1] <- rep(1, N)
