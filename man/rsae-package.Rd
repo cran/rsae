@@ -12,8 +12,8 @@ Computes robust basic unit- and area-level and predicts area-specific means
 \tabular{ll}{
 Package: \tab rsae\cr
 Type: \tab Package\cr
-Version: \tab 0.1-4\cr
-Date: \tab 2011-12-29\cr
+Version: \tab 0.1-5\cr
+Date: \tab 2014-02-12\cr
 Suggests: \tab robustbase, nlme\cr
 License: \tab GPL (>=2) | FreeBSD\cr
 LazyLoad: \tab yes\cr
@@ -40,7 +40,7 @@ Data analysis with \code{rsae} involves the following steps:
 \author{
 Tobias Schoch
 
-Maintainer: Tobias Schoch <tobias.schoch@fhnw.ch>
+Maintainer: Tobias Schoch <tobias.schoch@gmail.com>
 }
 \references{
 Anderson, E., Bai, Z., Bischof, C., Blackford, L. S., Demmel, J., Dongarra, J., et al. (2000): \emph{LAPACK users' guide} (3rd ed.). Philadelphia: Society for Industrial and Applied Mathematics (SIAM).
