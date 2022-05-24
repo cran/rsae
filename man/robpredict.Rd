@@ -1,102 +1,164 @@
 \name{robpredict}
 \alias{robpredict}
-\alias{print.meanssaemodel}
-\alias{plot.meanssaemodel}
-\alias{residuals.meanssaemodel}
-
-\title{
-Robust prediction of random effects, fixed effects, and area-specific means
-}
+\alias{print.pred_model_b}
+\alias{plot.pred_model_b}
+\alias{residuals.pred_model_b}
+\title{Robust Prediction of Random Effects, Fixed Effects, and
+    Area-Specific Means}
 \description{
-The function \code{robpredict} robustly predicts the random effects, fixed effects, and area-specific means under the model. As concerned with robustly predicting the realizations of the random effects, we rely on the method of Copt and Victoria-Feser (cf. Heritier et al., 2009, 113--114); not the method of Sinha and Rao (2009).
-
+    Function \code{robpredict()} predicts the area-level means by (1) the
+    empirical best linear unbiased predictor (EBLUP) or (2) a robust
+    prediction method which is due to Copt and Victoria-Feser (2009).
+    In addition, the function computes the mean square prediction
+    error (MSPE) of the predicted area-level means by a parametric
+    bootstrap method.
 }
 \usage{
-robpredict(fit, areameans=NULL, k=NULL, reps=NULL)
+robpredict(fit, areameans = NULL, k = NULL, reps = NULL, seed = 1024,
+    progress_bar = TRUE)
 
-\method{print}{meanssaemodel}(x, digits=4, ...)
-\method{plot}{meanssaemodel}(x, y=NULL, type="e", sort=NULL, ...)
-\method{residuals}{meanssaemodel}(object, ...)
+\method{print}{pred_model_b}(x, digits = max(3L, getOption("digits") - 3L),
+    ...)
+\method{plot}{pred_model_b}(x, type = "e", sort = NULL, ...)
+\method{residuals}{pred_model_b}(object, ...)
 }
-
 \arguments{
-  \item{fit}{
-a fitted SAE model; object of class \code{fitsaemodel}
-}
-   \item{areameans}{
-   numeric matrix (typically, with area-level means); the no. of rows must be equal to the no. of areas; the no. of columns must be equal to the no. of fixed-effects coefficients (incl. intercept). By default: \code{areadata=NULL}, i.e., predictions are based on those data that have been used to estimate the model.
-}
-  \item{k}{
-robustness tuning constant (of the Huber psi-function) for robust prediction. Notice that \code{k} does not necessarily be the same as the \code{k} that has been used in \code{fitsaemodel}. By default, \code{k} is equal to the tuning constant used in estimating the model parameters. 
-}
-  \item{reps}{
-number (integer) of bootstrap replicates for mean squared prediction error; default: \code{reps=NULL}
-}
-
-   \item{x}{
-object of the class \code{"meanssaemodel"}; this argument is only used in the \code{print} method.
-}
-   \item{digits}{
-integer, defining the number of decimal places to be shown in the \code{print} method (default: \code{digits=4})
-}
-   \item{y}{
-has no meaning, yet! (default: \code{y=NULL}; needs to included in the args list, because it is part of plot's generic arg definition)
-}
-   \item{type}{
-character specifying the \code{plot} method; either \code{"e"} (error bars; default) or \code{"l"} (lines).
-}
-   \item{sort}{
-only used in the \code{plot} method; if \code{sort="means"}, the predicted means are ploted in ascending order (default: \code{sort=NULL}); similarly, with \code{sort="fixef"} and \code{sort="ranef"} the predicted means are sorted along the fixed effects or the random effects, respectively
-}
-   \item{object}{
-object of the class \code{fitsaemodel}; a fitted model used in the \code{residuals} method.
-}
-   \item{\dots}{
-not used
-}
+    \item{fit}{an object of class \code{fit_model_b}; a fitted SAE model.}
+    \item{areameans}{\code{[matrix}]  or \code{[NULL]} area-level means of
+        dimension \code{(g, p)}, where \code{g} and \code{p} denote,
+        respectively, the number of areas and number of fixed-effects terms
+        in the regression model (incl. the intercept). By default,
+        \code{areadata = NULL} which implies that the predictions are
+        base on the data used in fitting the model (not new data).}
+    \item{k}{\code{[numeric]} or \code{[NULL]} robustness tuning constant
+        (of the Huber psi-function) for robust prediction. Note that
+        \code{k} does not necessarily have to be the same as the \code{k}
+        that has been used in \code{\link[=fitsaemodel]{fitsaemodel()}}.
+        By default, \code{k = NULL} which implies that the tuning constant
+        specified in \code{fitsaemodel()} is used.}
+    \item{reps}{\code{[integer}] or \code{[NULL]} number of bootstrap
+        replicates for the computation of the mean squared prediction
+        error (MSPE).  If \code{reps = NULL} the MSPE is not computed.}
+    \item{seed}{\code{[integer]} a positive integer used as argument
+        \code{seed} in \code{\link[=set.seed]{set.seed()}} to specify
+        the random seed.}
+    \item{progress_bar}{\code{[logical]} whether a progress bar is displayed
+        for the parametric bootstrap; see \bold{NOTE} below.}
+    \item{x}{an object of class \code{"pred_model_b"}.}
+    \item{digits}{\code{[integer]} number of digits to be printed by.}
+    \item{type}{\code{[character]} type of \code{plot} method: \code{"e"}
+        (error bars; default) or \code{"l"} (lines).}
+    \item{sort}{\code{[character]} or \code{[NULL]} if \code{sort = "means"},
+        the predicted means are ploted in ascending order (default:
+        \code{sort = NULL}); similarly, with \code{sort = "fixef"} and
+        \code{sort = "ranef"} the predicted means are sorted along the
+        fixed effects or the random effects, respectively.}
+    \item{object}{an object of class \code{fit_model_b}.}
+    \item{\dots}{additional arguments (not used).}
 }
 \details{
-The \code{robpredict} function enables the following modes of prediction:
-
-\itemize{
-   \item if \code{areameans=NULL}, then the predictions are exclusively based on the sample values,
-   \item if \code{robpredict} is called with \code{areameans} (i.e., matrix with area-specific means of the auxiliary data of conformable size), then the fixed-effect predictions and thus also the predictions of the area-specific means are based on the auxiliary data,
-   \item if, in addition to specifying \code{areameans}, one specifies also the number of bootstrap replications (i.e., \code{reps}; some positive integer), the function computes area-specific mean square prediction error (MSPE) estimates for the area-level means. The MSPE is obtained, in line with Sinha and Rao (2009), from a (robust) parametric bootstrap; see Lahiri (2003) and Hall and Maiti (2006) for more details.
+    Function \code{robpredict()} computes predictions of the area-level means
+    and---if required---an estimate of the area-specific mean square
+    prediction error (MSPE).
+    \describe{
+        \item{Prediction of area-level means}{
+            \itemize{
+                \item Case 1: If \code{areameans} is a \code{matrix} with
+                    area-level means of the explanatory variables, then
+                    the computation of the fixed effects effects are
+                    based on \code{areameans}.
+                \item Case 2: If \code{areameans = NULL}, then the predictions
+                    are based on the sample data that have been used to
+                    fit the model.
+            }
+        }
+        \item{Mean square prediction error}{
+            \itemize{
+                \item If \code{reps = NULL}, the number of bootstrap
+                    replicates is not specified; hence, MSPE is not computed.
+                \item If \code{reps} is a positive integer and
+                \code{areameans} is not \code{NULL} (see Case 1 above), then
+                a (robust) parametric bootstrap estimate of MSPE is computed
+                as proposed by Sinha and Rao (2009); see also Lahiri (2003)
+                and Hall.
+            }
+        }
+        \item{Robustness}{
+            \itemize{
+                \item The EBLUP obtains if \code{k = NULL}, i.e., if the
+                    robustness tuning constant \code{k} is unspecified.
+                \item Robust predictions of the area-level means are
+                    computed if \code{k} is a nonnegative real number.
+                    Small values of \code{k} imply that outliers are
+                    heavily downweighted; formally, the EBLUP corresponds
+                    to choosing the tuning constant \code{k} equal to
+                    infinity. The value of the tuning constant \code{k}
+                    specified in \code{robpredict()} can be different
+                    from the tuning constant \code{k} used in fitting
+                    the model. The robust prediction method is due to Copt
+                    and Victoria-Feser (2009); see also Heritier et al.
+                    (2009, 113-114) and differs from the method in Sinha
+                    and Rao (2009).
+            }
+        }
+    }
 }
-
-The tuning constant \code{k} regulates the degree of robustness (i.e., degree of winsorization of the Huber psi-function) when predicting the random effects. If \code{k} is sufficiently large (ideally, if \code{k} is equal to infinity), the predictions correspond to the EBLUP. 
-
+\section{NOTE}{
+    Users of \code{Rgui.exe} on Windows are recommended to call
+    \code{robpredict()} with argument \code{progress_bar = FALSE}
+    because \code{Rgui.exe} does not handle calls to
+    \code{\link[=txtProgressBar]{txtProgressBar()}} well (the
+    execution time of the same job increases and it tends to stall the
+    execution of R). Users of \code{R-Studio} and \code{Rterm.exe}
+    are \bold{not} affected.
 }
 \value{
-Instance of the S3 class \code{meanssaemodel}
+    An instance of the S3 class \code{pred_model_b}
 }
 \references{
+Copt, S. and M.-P. Victoria-Feser (2009).
+    \emph{Robust Predictions in Mixed Linear Models},
+    Research Report, University of Geneva.
 
-Copt, S. and M.-P. Victoria-Feser (2009): \emph{Robust Predictions in Mixed Linear Models}, Research Report, University of Geneva.
+Lahiri, P. (2003).
+    On the impact of bootstrap in survey sampling and small area estimation.
+    \emph{Statistical Science} \bold{18}, 199--210.
+    \doi{https://doi.org/10.1214/ss/1063994975}
 
-Lahiri, P. (2003): On the impact of bootstrap in survey sampling and small area estimation. \emph{Statistical Science} 18, 199--210.
+Hall, P. and T. Maiti (2006).
+    On parametric bootstrap methods for small area prediction.
+    \emph{Journal of the Royal Statistical Society. Series B} \bold{68},
+    221--238. \doi{https://doi.org/10.1111/j.1467-9868.2006.00541.x}
 
-Hall, P. and T. Maiti (2006): On parametric bootstrap methods for small area prediction. \emph{Journal of the Royal Statistical Society. Series B}, 68, 221--238.
+Heritier, S., Cantoni, E., Copt, S., and M.-P. Victoria-Feser (2009).
+    \emph{Robust methods in biostatistics}. New York: John Wiley and Sons.
 
-Heritier, S., Cantoni, E., Copt, S., and M.-P. Victoria-Feser (2009): \emph{Robust methods in biostatistics}. New York: John Wiley and Sons.
+Schoch, T. (2012). Robust Unit-Level Small Area Estimation: A Fast Algorithm
+    for Large Datasets. \emph{Austrian Journal of Statistics} \bold{41},
+    243--265. \url{http://www.stat.tugraz.at/AJS/ausg124/124Schoch.pdf}
 
-Sinha, S.K. and J.N.K. Rao (2009): Robust Small Area Estimation. \emph{The Canadian Journal of Statistics} 37, 381--399.
+Sinha, S.K. and J.N.K. Rao (2009).
+    Robust small area estimation.
+    \emph{Canadian Journal of Statistics} \bold{37}, 381--399.
+    \doi{https://doi.org/10.1002/cjs.10029}
 }
-\author{
-Tobias Schoch
-} 
+\seealso{
+    \code{\link[=saemodel]{saemodel()}}, \code{\link[=makedata]{makedata()}},
+    \code{\link[=fitsaemodel]{fitsaemodel()}}
+}
 \examples{
-#generate the synthetic data/model
-mymodel <- makedata()
-#compute Huber M-estimation type estimates of the model "mymodel"
-#robustness tuning constant k = 2
-myfittedmodel <- fitsaemodel("huberm", mymodel, k=2)
-myfittedmodel
-#get a summary of the model
-summary(myfittedmodel)
-#robustly predict the random effects and the area-level means.  
-#Here, we choose the robustness tuning constant k equal to 1.8
-mypredictions <- robpredict(myfittedmodel, k=1.8)
-mypredictions
-}
+# generate synthetic data
+m <- makedata()
 
+# Huber M-estimate with robustness tuning constant k = 2
+m_fit <- fitsaemodel("huberm", m, k = 2)
+m_fit
+
+# summary of the fitted model
+summary(m_fit)
+
+# robust prediction of the random effects and the area-level means; here,
+# we choose the robustness tuning constant k equal to 1.8
+m_predicted <- robpredict(m_fit, k = 1.8)
+m_predicted
+}

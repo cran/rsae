@@ -3,26 +3,26 @@
 !     Copyright (c) 2011, Tobias Schoch
 !     All rights reserved.
 !
-!     Redistribution and use in source and binary forms, with or 
-!     without modification, are permitted provided that the following 
+!     Redistribution and use in source and binary forms, with or
+!     without modification, are permitted provided that the following
 !     conditions are met:
 !
 !     * Redistributions of source code must retain the above copyright
 !       notice, this list of conditions and the following disclaimer.
-!     * Redistributions in binary form must reproduce the above 
-!       copyright notice, this list of conditions and the following 
+!     * Redistributions in binary form must reproduce the above
+!       copyright notice, this list of conditions and the following
 !       disclaimer in the documentation and/or other materials provided
 !       with the distribution.
 !
-!     THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND 
-!     CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, 
-!     INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF 
-!     MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE 
+!     THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND
+!     CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
+!     INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+!     MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
 !     DISCLAIMED. IN NO EVENT SHALL Tobias Schoch BE LIABLE FOR
-!     ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
+!     ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
 !     CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT
-!     OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; 
-!     OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF 
+!     OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+!     OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
 !     LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 !     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 !     THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
@@ -30,26 +30,26 @@
 !
 !####################################################################
 !
-!SUBJECT:      This file, rsae.f90, contains Fortran 90 code for 
-!              robust estimation of the basic unit-level small area 
+!SUBJECT:      This file, rsae.f90, contains Fortran 90 code for
+!              robust estimation of the basic unit-level small area
 !              model by means of Huber M-estimation
-!NOTES:        These subroutines are designed to be called from R; see 
+!NOTES:        These subroutines are designed to be called from R; see
 !              R Development Core Team (2011) for more details on R.
 !              Do not call any routine by yourself unless you are
 !              certain about the implementation details.
 !COMPILER:     GNU gfortran v 4.5.1
 !TESTS:        code tested on platform x86_64 SUSE Linux v 11.4
-!FORTRAN SPEC: The layout of this file has been chosen to conform 
+!FORTRAN SPEC: The layout of this file has been chosen to conform
 !              with F77's limitation of 72 char per line
 !              (otherwise gfortran must be called
 !              with flag: -ffree-form; or with file ext. ".f90"
 !AUTHOR:       Tobias Schoch, June 12, 2011
-!LICENSE:      BSD 2 (i.e., modified, 2-clause Berkeley Software 
+!LICENSE:      BSD 2 (i.e., modified, 2-clause Berkeley Software
 !              Distribution License, aka Simplified BSD License, aka
 !              FreeBSD License; see above)
 !DEPENDENCY:   LAPACK
 !              BLAS
-!              Richard Brents zeroin.f function (GPL; see file 'rsaeext.f90') 
+!              Richard Brents zeroin.f (GPL; see file 'rsaeext.f90')
 !
 !####################################################################
 !
@@ -59,11 +59,11 @@
 !DESCRIPTION:  convert a upper triagular matrix to a full matrix
 !ON ENTRY:
 !  INTEGER n(1)
-!  REAL mat(n, n) 
+!  REAL mat(n, n)
 !ON RETURN
 !  REAL mat(n, n)
 !--------------------------------------------------------------------
-SUBROUTINE dconvumtofull(n, mat) 
+SUBROUTINE dconvumtofull(n, mat)
    IMPLICIT NONE
    INTEGER, INTENT(IN):: n
    DOUBLE PRECISION, INTENT(INOUT) :: mat(n, n)
@@ -75,24 +75,24 @@ SUBROUTINE dconvumtofull(n, mat)
          mat(i, j) = mat(j, i)
       END DO
    END DO
-END SUBROUTINE 
+END SUBROUTINE
 !
 !====================================================================
 !SUBROUTINE:   drsaebeta
 !PART OF:      rsaehuber
 !DESCRIPTION:  compute the residual vector
-!DEPENDENCY:   
-!  dgemv (BLAS2 and LAPACK), dgels (LAPACK) 
+!DEPENDENCY:
+!  dgemv (BLAS2 and LAPACK), dgels (LAPACK)
 !  dhuberwgt, dsqrtinvva
 !ON ENTRY:
 !  INTEGER n(1), p(1), k(1), nsize(g), info(1), dec(1), decorr(1)
 !  REAL k(1), xmat(n,p) yvec(n), d(1), v(1)
 !      beta(p)
-!ON RETURN: 
+!ON RETURN:
 !  INTEGER info(1)
 !  REAL beta(p), sumwgt(1)
 !--------------------------------------------------------------------
-SUBROUTINE drsaebeta(n, p, g, k, xmat, yvec, v, d, nsize, beta,& 
+SUBROUTINE drsaebeta(n, p, g, k, xmat, yvec, v, d, nsize, beta,&
       sumwgt, info, dec, decorr)
    IMPLICIT NONE
    INTEGER, INTENT(IN) :: n, p, g, dec, decorr
@@ -107,8 +107,8 @@ SUBROUTINE drsaebeta(n, p, g, k, xmat, yvec, v, d, nsize, beta,&
    INTEGER :: i, j, lwork
    INTEGER, PARAMETER :: lworkmax = 10000
    DOUBLE PRECISION :: work(lworkmax)
-   DOUBLE PRECISION :: modyvec(n), res(n) 
-   DOUBLE PRECISION :: modxmat(n, p) 
+   DOUBLE PRECISION :: modyvec(n), res(n)
+   DOUBLE PRECISION :: modxmat(n, p)
    !
    res = yvec
    CALL dgemv("N", n, p, -1D0, xmat, n, beta, 1, 1D0, res, 1)
@@ -123,8 +123,8 @@ SUBROUTINE drsaebeta(n, p, g, k, xmat, yvec, v, d, nsize, beta,&
       DO i = 1, n
          modxmat(i, j) = modxmat(i, j) * res(i)
          modyvec(i) = modyvec(i) * res(i)
-         sumwgt = sumwgt + res(i) ** 2 
-       END DO  
+         sumwgt = sumwgt + res(i) ** 2
+       END DO
    END DO
    lwork = -1
    CALL dgels("n", n, p, 1, modxmat, n, modyvec, n, work, lwork, info)
@@ -135,7 +135,7 @@ SUBROUTINE drsaebeta(n, p, g, k, xmat, yvec, v, d, nsize, beta,&
    ELSE
       beta = 0
    END IF
-END SUBROUTINE 
+END SUBROUTINE
 
 !====================================================================
 !SUBROUTINE:   drsaehubpredict
@@ -143,7 +143,7 @@ END SUBROUTINE
 !DESCRIPTION:  robust prediction of random effects
 !DEPENDENCY:   dsqrtinvva, huberpsi, dgemv(BLAS)
 !ON ENTRY:
-!  INTEGER n(1), p(1), g(1), nsize(g), dec(1) 
+!  INTEGER n(1), p(1), g(1), nsize(g), dec(1)
 !  REAL k(1), kappa(1), d(1), v(1), beta(p), yvec(n), xmat(n,p)
 !ON RETURN
 !  REAL predfe(g), predre(g)
@@ -161,7 +161,7 @@ SUBROUTINE drsaehubpredict(n, p, g, nsize, k, kappa, d, v, beta, yvec, &
    !local declarations
    INTEGER :: i, j
    INTEGER :: l(g)
-   DOUBLE PRECISION :: workfe, workre, sigma2a 
+   DOUBLE PRECISION :: workfe, workre, sigma2a
    DOUBLE PRECISION :: res(n), stdr(n), yhat(n)
    sigma2a = v * d
    CALL dgemv("N", n, p, 1D0, xmat, n, beta, 1, 0D0, yhat, 1)
@@ -179,8 +179,8 @@ SUBROUTINE drsaehubpredict(n, p, g, nsize, k, kappa, d, v, beta, yvec, &
       workre = 0D0
       workfe = 0D0
       DO j = 1, nsize(i)
-         workre = workre + stdr(l(i) + j - 1) 
-         workfe = workfe + yhat(l(i) + j - 1) 
+         workre = workre + stdr(l(i) + j - 1)
+         workfe = workfe + yhat(l(i) + j - 1)
       END DO
       predre(i) = workre * sigma2a * (1 / kappa)
       predfe(i) = workfe / nsize(i)
@@ -202,12 +202,12 @@ END SUBROUTINE
 !                 1: Hartley-Rao
 !                 (else): returns a zero matrix/vector
 !
-!              decorr (decorrelation; works only for amat of size 1; 
+!              decorr (decorrelation; works only for amat of size 1;
 !                 i.e, y-variable)
 !                 0: [as is]
 !                 1: center by the median instead of the mean
 !
-!BENCHMARK:    (self-contained testing; approved June 23, 2011; 
+!BENCHMARK:    (self-contained testing; approved June 23, 2011;
 !              modifications: Nov 16, 2011)
 !DEPENDENCY:   DPOTRF (LAPACK); dmedmad (sctrob)
 !FORTRAN:      uses dynamic allocation (only v90, not v77)
@@ -223,7 +223,7 @@ SUBROUTINE dsqrtinvva(n, p, g, nsize, d, v, par, dec, decorr, amat)
    INTEGER, INTENT(IN) :: nsize(g)
    DOUBLE PRECISION, INTENT(IN) :: d, v
    DOUBLE PRECISION, INTENT(INOUT) :: amat(n, p)
-   INTEGER :: i, j, k, info 
+   INTEGER :: i, j, k, info
    INTEGER :: l(g), u(g)
    DOUBLE PRECISION :: fd, sqrtv, med
    DOUBLE PRECISION :: m(p)
@@ -232,7 +232,7 @@ SUBROUTINE dsqrtinvva(n, p, g, nsize, d, v, par, dec, decorr, amat)
    u(1) = nsize(1)
    DO i = 2, g
       l(i) = l(i - 1) + nsize(i - 1)
-      u(i) = u(i - 1) + nsize(i) 
+      u(i) = u(i - 1) + nsize(i)
    END DO
    IF (dec == 0) THEN
       SELECT CASE (par)
@@ -241,7 +241,7 @@ SUBROUTINE dsqrtinvva(n, p, g, nsize, d, v, par, dec, decorr, amat)
          !robust decorrelation (i.e., centering by median)
             DO i = 1, g
                fd = (1 / SQRT(1 + d * nsize(i))) - 1
-               CALL dmedmad(nsize(i), amat( l(i) : u(i), 1), 0, med) 
+               CALL dmedmad(nsize(i), amat( l(i) : u(i), 1), 0, med)
                DO j = 1, nsize(i)
                   amat(l(i) + j - 1, 1) = (fd * med) + amat(l(i) + j - 1, 1)
                END DO
@@ -263,7 +263,7 @@ SUBROUTINE dsqrtinvva(n, p, g, nsize, d, v, par, dec, decorr, amat)
             sqrtv = SQRT(v)
             DO i = 1, g
                fd = (1 / SQRT(1 + d * nsize(i))) - 1
-               CALL dmedmad(nsize(i), amat( l(i) : u(i), 1), 0, med) 
+               CALL dmedmad(nsize(i), amat( l(i) : u(i), 1), 0, med)
                DO j = 1, nsize(i)
                   amat(l(i) + j - 1, 1) = (( fd / sqrtv ) * med) + &
                      amat(l(i) + j - 1, 1)
@@ -283,8 +283,8 @@ SUBROUTINE dsqrtinvva(n, p, g, nsize, d, v, par, dec, decorr, amat)
             END DO
          END IF
       CASE DEFAULT
-         amat = 0D0 
-      END SELECT  
+         amat = 0D0
+      END SELECT
    ELSE
       DO i = 1, g
          ALLOCATE( winvv( nsize(i), nsize(i) ) )
@@ -292,9 +292,9 @@ SUBROUTINE dsqrtinvva(n, p, g, nsize, d, v, par, dec, decorr, amat)
          DO j = 1, nsize(i)
             winvv(j, j) = winvv(j, j) + 1
          END DO
-         CALL dpotrf("U", nsize(i), winvv, nsize(i), info) 
+         CALL dpotrf("U", nsize(i), winvv, nsize(i), info)
          CALL dtrmm("L", "U", "N", "N", nsize(i), p, 1D0, winvv, &
-            nsize(i), amat( l(i) : u(i), :), nsize(i)) 
+            nsize(i), amat( l(i) : u(i), :), nsize(i))
          DEALLOCATE(winvv)
       END DO
       IF (par == 0) THEN
@@ -305,15 +305,15 @@ SUBROUTINE dsqrtinvva(n, p, g, nsize, d, v, par, dec, decorr, amat)
          END DO
       END IF
    END IF
-END SUBROUTINE 
+END SUBROUTINE
 !
 !====================================================================
 !SUBROUTINE:   ddelta
 !PART OF:      sctrob
 !DESCRIPTION:  computes the squared norm for two parameter vectors and
-!              evaluates if their difference is smaller than the 
+!              evaluates if their difference is smaller than the
 !              reference acc; return 1 if true, 0 else.
-!              this function computation the termination rule for 
+!              this function computation the termination rule for
 !              iterative algorithms (either for parameters or resids)
 !DEPENDENCY:   none
 !ON ENTRY:
@@ -338,21 +338,21 @@ SUBROUTINE ddelta(p, oldvec, newvec, acc, res)
    ELSE
       res = 0
    END IF
-END SUBROUTINE 
+END SUBROUTINE
 !
 
 !====================================================================
 !SUBROUTINE:   drsaebetaiter
 !PART OF:      rsaehuber
 !DESCRIPTION:  fully iterated drsaebeta; info carries the # of iter
-!DEPENDENCY:   
+!DEPENDENCY:
 !  drsaebeta
-!  ddelta 
+!  ddelta
 !ON ENTRY:
 !  INTEGER n(1), p(1), k(1), nsize(g), iter(1), dec(1), decorr(1)
 !  REAL k(1), xmat(n,p) yvec(n), v(1), d(1), acc(1)
 !      beta(p)
-!ON RETURN: 
+!ON RETURN:
 !  INTEGER converged(1), info(1)
 !  REAL beta(p), sumwgt(1)
 !--------------------------------------------------------------------
@@ -379,7 +379,7 @@ SUBROUTINE drsaebetaiter(n, p, g, k, xmat, yvec, v, d, nsize, acc, &
          beta, sumwgt, coinfo, dec, decorr)
       IF (coinfo /= 0) THEN
          beta = 0
-         EXIT 
+         EXIT
       END IF
       niter = niter + 1
       CALL ddelta(p, betaold, beta, acc, converged)
@@ -396,10 +396,10 @@ END SUBROUTINE
 !DESCRIPTION:  robust prediction of random effects
 !DEPENDENCY:   dsqrtinvva, dsyrk(BLAS), dtrtri(LAPACK)
 !ON ENTRY:
-!  INTEGER 
-!  REAL 
+!  INTEGER
+!  REAL
 !ON RETURN
-!  REAL 
+!  REAL
 !--------------------------------------------------------------------
 SUBROUTINE drsaehubvariance(n, p, g, nsize, kappa, v, d, xmat, &
       vcovbeta, dec)
@@ -419,7 +419,7 @@ SUBROUTINE drsaehubvariance(n, p, g, nsize, kappa, v, d, xmat, &
    CALL dsqrtinvva(n, p, g, nsize, d, v, 0, dec, 0, modx)
    CALL dsyrk("U", "T", p, n, 1D0, modx, n, 0D0, mxtmx, p)
    fmxtmx = mxtmx
-   CALL dconvumtofull(p, fmxtmx) 
+   CALL dconvumtofull(p, fmxtmx)
    CALL dpotrf("U", p, fmxtmx, p, info)
    IF (info == 0) THEN
       CALL dpotri("U", p, fmxtmx, p, info)
@@ -437,7 +437,7 @@ END SUBROUTINE
 !SUBROUTINE:   dhuberpsi
 !PART OF:      sctrob
 !DESCRIPTION:  compute huber psi
-!BENCHMARK:    robustbase:::huberPsi@psi (v 0.7-6), 
+!BENCHMARK:    robustbase:::huberPsi@psi (v 0.7-6),
 !              approved June 18, 2011
 !DEPENDENCY:   none
 !ON ENTRY:
@@ -461,16 +461,16 @@ SUBROUTINE dhuberpsi(n, k, vec)
          vec(i) = SIGN(k, vec(i))
       END IF
    END DO
-END SUBROUTINE 
+END SUBROUTINE
 !
 !====================================================================
 !SUBROUTINE:   drsaehubdest
 !PART OF:      drsaehuber
 !DESCRIPTION:  evaluates the (non-linear) estimating of d; it is called
-!              from the modified zeroin function; kappa is the 
-!              consistency correction term 
-!BENCHMARK:    
-!DEPENDENCY:   
+!              from the modified zeroin function; kappa is the
+!              consistency correction term
+!BENCHMARK:
+!DEPENDENCY:
 !  dhuberpsi, dsqrtinvva
 !ON ENTRY:
 !  INTEGER n(1), g(1), nsize(g), dec(1), decorr(1)
@@ -478,7 +478,7 @@ END SUBROUTINE
 !ON RETURN: REAL eval(1)
 !--------------------------------------------------------------------
 SUBROUTINE drsaehubdest(n, g, nsize, d, v, k, kappa, res, eval, dec, &
-      decorr) 
+      decorr)
    IMPLICIT NONE
    INTEGER, INTENT(IN) :: n, g, dec, decorr
    INTEGER, INTENT(IN) :: nsize(g)
@@ -486,7 +486,7 @@ SUBROUTINE drsaehubdest(n, g, nsize, d, v, k, kappa, res, eval, dec, &
    DOUBLE PRECISION, INTENT(IN) :: res(n)
    DOUBLE PRECISION, INTENT(OUT) :: eval
    INTEGER :: i, j
-   INTEGER :: l(g) 
+   INTEGER :: l(g)
    DOUBLE PRECISION :: lhs, rhs, work
    DOUBLE PRECISION :: vec(n)
    !
@@ -506,27 +506,27 @@ SUBROUTINE drsaehubdest(n, g, nsize, d, v, k, kappa, res, eval, dec, &
          work = work + vec(l(i) + j - 1) * SQRT(1 / (1 + d * nsize(i)))
       END DO
       rhs = rhs + (work ** 2) / kappa
-   END DO 
+   END DO
    eval = lhs - rhs
-END SUBROUTINE 
+END SUBROUTINE
 !
 !====================================================================
 !SUBROUTINE:   drsaehubvest
 !PART OF.      rsaehuber
 !DESCRIPTION:  compute a Huber type M-scale^2 estimate; note that
-!              stdres = v^(-1/2)*res, with res=y-x*beta and v is 
+!              stdres = v^(-1/2)*res, with res=y-x*beta and v is
 !              parametrized in Hartley-Rao manner
 !              notice, kappa denotes the consistency correction term
 !              for Huber's Proposal 2 estimator.
 !BENCHMARK:    MASS:::hubers(x, k, mu=0) (v 7.3-12),
-!              approved on June 23, 2011 
-!DEPENDENCY:   
+!              approved on June 23, 2011
+!DEPENDENCY:
 !  dhuberwgt
 !ON ENTRY:
 !  INTEGER n(1), niter(1)
 !  REAL k(1), acc(1), kappa(1), stdres(n)
 !ON RETURN:
-!  INTEGER info(1) 
+!  INTEGER info(1)
 !  REAL v(1), sumwgt(1)
 !--------------------------------------------------------------------
 SUBROUTINE drsaehubvest(n, niter, v, k, acc, kappa, stdres, &
@@ -545,12 +545,12 @@ SUBROUTINE drsaehubvest(n, niter, v, k, acc, kappa, stdres, &
    DOUBLE PRECISION :: workresid(n)
    vold = v
    DO iter = 1, niter
-      ssq = 0D0   
+      ssq = 0D0
       sumwgt = 0D0
-      workresid = stdres / SQRT(vold) 
+      workresid = stdres / SQRT(vold)
       CALL dhuberwgt(n, k, 2, workresid)
       DO i = 1, n
-         ssq = ssq + workresid(i) * stdres(i) ** 2 
+         ssq = ssq + workresid(i) * stdres(i) ** 2
          sumwgt = sumwgt + workresid(i)
       END DO
       v = ssq / (n * kappa)
@@ -561,17 +561,17 @@ SUBROUTINE drsaehubvest(n, niter, v, k, acc, kappa, stdres, &
       END IF
    END DO
    info = iter
-END SUBROUTINE 
+END SUBROUTINE
 !
 !====================================================================
 !SUBROUTINE:   dhuberwgt
 !PART OF:      sctrob
-!DESCRIPTION:  compute huber psi-weight; NOTE: 
-!              typ = 1 for sqrt(wgt)  
-!              typ = 0 for wgt, 
+!DESCRIPTION:  compute huber psi-weight; NOTE:
+!              typ = 1 for sqrt(wgt)
+!              typ = 0 for wgt,
 !              typ = 2 for wgt^2
-!BENCHMARK:    robustbase:::huberPsi@wgt (v 0.7-6), 
-!              approved, June 19, 2011 
+!BENCHMARK:    robustbase:::huberPsi@wgt (v 0.7-6),
+!              approved, June 19, 2011
 !DEPENDENCY:   none
 !ON ENTRY:
 !  INTEGER n(1), typ(1)
@@ -589,7 +589,7 @@ SUBROUTINE dhuberwgt(n, k, typ, vec)
    DOUBLE PRECISION :: choice(n)
    !
    choice = k / ABS(vec)
-   SELECT CASE (typ) 
+   SELECT CASE (typ)
       CASE(1) !take the square root of the weights
          DO i = 1, n
             IF (choice(i) < 1D0) THEN
@@ -614,40 +614,40 @@ SUBROUTINE dhuberwgt(n, k, typ, vec)
                vec(i) = 1
             END IF
          END DO
-      CASE DEFAULT !an errorneous call returns one 
-         vec = 0 
+      CASE DEFAULT !an errorneous call returns one
+         vec = 0
    END SELECT
 END SUBROUTINE
 !
 !====================================================================
-!SUBROUTINE:      drsaehub 
+!SUBROUTINE:      drsaehub
 !DESCRIPTION:     drsaehub is the main or workhorse function that
-!                 can be called from R. 
-!                 NOTE that neither this nor any function called 
+!                 can be called from R.
+!                 NOTE that neither this nor any function called
 !                 subsequently, i.e., from within rsaehub, does any
-!                 tests (except standard data-type-conformity tests) 
+!                 tests (except standard data-type-conformity tests)
 !                 whether the delivered args match or whether they
-!                 are meaningful. This is the job of the calling 
+!                 are meaningful. This is the job of the calling
 !                 instance, namely the R-function rsaehub.
 !DEPENDENCY:      drsaebetaiter, dgemv(BLAS), dsqrtinvva, drsaehubvest
 !                 drsaehubdestiter, ddelta
 !ON ENTRY:
-!  INTEGER  n(1), p(1), g(1), niter(1), nsize(g), iter(2), dec(1), 
+!  INTEGER  n(1), p(1), g(1), niter(1), nsize(g), iter(2), dec(1),
 !           decorr(1)
-!  REAL     k(2), allacc(1), epsd(1), acc(3), sumwgt(3), xmat(n, p), 
-!           yvec(n), kappa(2), iterrecord(niter,p+2), 
+!  REAL     k(2), allacc(1), epsd(1), acc(3), sumwgt(3), xmat(n, p),
+!           yvec(n), kappa(2), iterrecord(niter,p+2),
 !ON RETURN:
-!  INTEGER: niter(1), allconverged(1) 
-!  REAL:    tau(p+2), taurecord(niter, p+2) 
+!  INTEGER: niter(1), allconverged(1)
+!  REAL:    tau(p+2), taurecord(niter, p+2)
 !--------------------------------------------------------------------
 SUBROUTINE drsaehub(n, p, g, niter, nsize, iter, iterrecord, allacc, &
       acc, sumwgt, xmat, yvec, k, kappa, epsd, tau, taurecord, &
       allconverged, dec, decorr)
    IMPLICIT NONE
    INTEGER, INTENT(IN) :: n, p, g, dec, decorr
-   INTEGER, INTENT(IN) :: niter 
+   INTEGER, INTENT(IN) :: niter
    INTEGER, INTENT(IN) :: nsize(g)
-   INTEGER, INTENT(IN) :: iter(2) 
+   INTEGER, INTENT(IN) :: iter(2)
    INTEGER, INTENT(OUT):: allconverged
    DOUBLE PRECISION, INTENT(IN) :: allacc, epsd
    DOUBLE PRECISION, INTENT(IN) :: k(3)
@@ -655,27 +655,27 @@ SUBROUTINE drsaehub(n, p, g, niter, nsize, iter, iterrecord, allacc, &
    DOUBLE PRECISION, INTENT(IN) :: acc(3)
    DOUBLE PRECISION, INTENT(IN) :: xmat(n, p)
    DOUBLE PRECISION, INTENT(IN) :: yvec(n)
-   DOUBLE PRECISION, INTENT(OUT) :: iterrecord(niter, 3) 
-   DOUBLE PRECISION, INTENT(INOUT) :: tau(p + 2) 
-   DOUBLE PRECISION, INTENT(OUT) :: taurecord(niter, p + 2) 
-   DOUBLE PRECISION, INTENT(OUT) :: sumwgt(3) 
+   DOUBLE PRECISION, INTENT(OUT) :: iterrecord(niter, 3)
+   DOUBLE PRECISION, INTENT(INOUT) :: tau(p + 2)
+   DOUBLE PRECISION, INTENT(OUT) :: taurecord(niter, p + 2)
+   DOUBLE PRECISION, INTENT(OUT) :: sumwgt(3)
    INTEGER :: i, j, convergedbeta, work, monitord
-   DOUBLE PRECISION :: upper 
-   DOUBLE PRECISION :: oldtau(p + 2) 
-   DOUBLE PRECISION :: res(n), stdres(n), sumwgtres(n) 
+   DOUBLE PRECISION :: upper
+   DOUBLE PRECISION :: oldtau(p + 2)
+   DOUBLE PRECISION :: res(n), stdres(n), sumwgtres(n)
    iterrecord = 0
    allconverged = 0
-   monitord = 0 
+   monitord = 0
    DO i = 1, niter
-      oldtau(1 : p) = tau(1 : p) 
-      oldtau(p + 1) = tau(p + 1) 
+      oldtau(1 : p) = tau(1 : p)
+      oldtau(p + 1) = tau(p + 1)
       oldtau(p + 2) = tau(p + 2)
       CALL drsaebetaiter(n, p, g, k(1), xmat, yvec, tau(p+1), tau(p+2), &
          nsize, acc(1), tau(1:p), iter(1), convergedbeta, sumwgt(1), &
          work, dec, decorr)
       iterrecord(i, 1) = work
       IF (convergedbeta /= 1) THEN
-         iterrecord(1, i) = (-1) * iterrecord(1, i) 
+         iterrecord(1, i) = (-1) * iterrecord(1, i)
       END IF
       res = yvec
       CALL dgemv("N", n, p, -1D0, xmat, n, tau(1:p), 1, 1D0, res, 1)
@@ -691,7 +691,7 @@ SUBROUTINE drsaehub(n, p, g, niter, nsize, iter, iterrecord, allacc, &
       ELSE
          upper = tau(p+2) * 1D1
          CALL drsaehubdestiter(n, g, nsize, tau(p+1), k(3), kappa(2), &
-            res, 0D0, upper, acc(3), tau(p+2), work, dec, decorr) 
+            res, 0D0, upper, acc(3), tau(p+2), work, dec, decorr)
          iterrecord(i, 3) = work
          IF (SUM(taurecord(MAX(i-2, 1):i, p+2)) < 3*epsd .AND. i >= 3) THEN
             monitord = 1
@@ -710,17 +710,17 @@ SUBROUTINE drsaehub(n, p, g, niter, nsize, iter, iterrecord, allacc, &
    sumwgt(3) = 0D0
    DO j = 1, n
       sumwgt(3) = sumwgt(3) + sumwgtres(j)
-   END DO 
+   END DO
 END SUBROUTINE
 !
 !====================================================================
 !SUBROUTINE:   drsaeresid
 !PART OF:      rsaehuber
-!DESCRIPTION:  get the residuals and the huber wgt; i.e., res = e_ij 
+!DESCRIPTION:  get the residuals and the huber wgt; i.e., res = e_ij
 !              = y_ij - X_ij * beta - u_i; and stdres=V^(-1/2)*res;
 !              the huber weight is w.r.t. to the model-psi (not the
 !              prediction)
-!BENCHMARK:    
+!BENCHMARK:
 !DEPENDENCY:   dgemv(BLAS), dsqrtinvva, huberwgt
 !ON ENTRY:
 !  INTEGER n(1), p(1), g(1), nsize(g), dec(1)
@@ -753,18 +753,18 @@ SUBROUTINE drsaeresid(n, p, g, nsize, k, tau, u, xmat, yvec, res, &
       DO j = 1, nsize(i)
          res(l(i) + j - 1) = res(l(i) + j - 1) - u(i)
       END DO
-   END DO 
+   END DO
    stdres = res
    CALL dsqrtinvva(n, 1, g, nsize, tau(p+2), tau(p+1), 0, dec, 0, stdres)
    wgt = stdres
-   CALL dhuberwgt(n, k, 0, wgt) 
+   CALL dhuberwgt(n, k, 0, wgt)
 END SUBROUTINE
 !
 !====================================================================
 !SUBROUTINE:   dmedmed
 !AUTHOR:       Tobias Schoch, November 19, 2011
 !PART OF:      sctrob
-!DESCRIPTION:  computes the median (type=2 in R; i.e., average over 
+!DESCRIPTION:  computes the median (type=2 in R; i.e., average over
 !              discontinuities) and compute the mad
 !              typ = 0; median
 !              typ = 1; mad
@@ -776,7 +776,7 @@ END SUBROUTINE
 !ON RETURN
 !  REAL res(1)
 !--------------------------------------------------------------------
-SUBROUTINE dmedmad(n, vx, typ, res) 
+SUBROUTINE dmedmad(n, vx, typ, res)
    IMPLICIT NONE
    INTEGER, INTENT(IN):: n, typ
    DOUBLE PRECISION, INTENT(IN) :: vx(n)
@@ -796,25 +796,25 @@ SUBROUTINE dmedmad(n, vx, typ, res)
       END DO
       CALL qsort3(work, 1, n)
       IF (MODULO(n, 2) == 0) THEN
-         res = ( 1.4814 / 2D0 ) * ( work(n / 2) + work((n / 2) + 1) ) 
+         res = ( 1.4814 / 2D0 ) * ( work(n / 2) + work((n / 2) + 1) )
       ELSE
          res = 1.4814 * work( ( (n - 1) / 2) + 1)
       END IF
    END IF
-END SUBROUTINE 
+END SUBROUTINE
 !====================================================================
 !SUBROUTINE:   drlm
 !PART OF:      sctrob
 !AUTHOR:       Tobias Schoch, November 20, 2011
 !DESCRIPTION:  compute regression M-estimates, using the mad as the
-!              preliminary scale estimate 
-!DEPENDENCY:   
-!  dgemv (BLAS2 and LAPACK), dgels (LAPACK) 
+!              preliminary scale estimate
+!DEPENDENCY:
+!  dgemv (BLAS2 and LAPACK), dgels (LAPACK)
 !  dhuberwgt, dmedmad
 !ON ENTRY:
-!  INTEGER n(1), p(1), 
+!  INTEGER n(1), p(1),
 !  REAL xmat(n, p), yvec(n), k(1), beta(p), acc(1)
-!ON RETURN: 
+!ON RETURN:
 !  INTEGER info(1)
 !  REAL beta(p), s(1)
 !--------------------------------------------------------------------
@@ -832,8 +832,8 @@ SUBROUTINE drlm(n, p, xmat, yvec, k, beta, s, info, niter, acc)
    INTEGER, PARAMETER :: lworkmax = 10000
    DOUBLE PRECISION :: oldbeta(p)
    DOUBLE PRECISION :: work(lworkmax)
-   DOUBLE PRECISION :: modyvec(n), res(n) 
-   DOUBLE PRECISION :: modxmat(n, p)  
+   DOUBLE PRECISION :: modyvec(n), res(n)
+   DOUBLE PRECISION :: modxmat(n, p)
    DO l = 1, niter
       oldbeta = beta
       res = yvec
@@ -846,7 +846,7 @@ SUBROUTINE drlm(n, p, xmat, yvec, k, beta, s, info, niter, acc)
       DO j = 1, p
          DO i = 1, n
             modyvec(i) = yvec(i) * res(i)
-            modxmat(i, j) = xmat(i, j) * res(i) 
+            modxmat(i, j) = xmat(i, j) * res(i)
          END DO
       END DO
       lwork = -1

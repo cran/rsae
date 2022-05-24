@@ -1,29 +1,29 @@
 !####################################################################
 !        The subroutine "drsaehubdestiter" derives code from Richard
-!        Brent's Fortran77 function "zeroin"; cf., Brent, R.P. 
-!        1973, Algorithms for Minimization without Derivatives 
+!        Brent's Fortran77 function "zeroin"; cf., Brent, R.P.
+!        1973, Algorithms for Minimization without Derivatives
 !        (Englewood Cliffs, NJ: Prentice- Hall).
 !
-!        I obtained the code of "zeroin.f" from 
+!        I obtained the code of "zeroin.f" from
 !        http://www.netlib.org/go/zeroin.f,
-!        on June 24, 2011. 
+!        on June 24, 2011.
 !
-!        Richard's original code is licensed under GNU General 
-!        Public License (cf., 
+!        Richard's original code is licensed under GNU General
+!        Public License (cf.,
 !        http//:maths.anu.edu.au/~brent/software.html; June 24, 2011).
 !
 !        I modified the original code in order that it meets
-!        the gfortran f90 standards, and added some specific 
-!        blocks that I need for my computations.    
+!        the gfortran f90 standards, and added some specific
+!        blocks that I need for my computations.
 !
-!        I therefore license the subroutine "drsaehubdestiter" 
+!        I therefore license the subroutine "drsaehubdestiter"
 !        also under GNU General Public License; GPL >=2.
 !
 !        You can find a copy of the GPL-2 license under
 !        $RHOME/share/licenses/GPL-2
-!        where $RHOME denotes the root directory of your R 
+!        where $RHOME denotes the root directory of your R
 !        (r-project.org) installation.
-!        
+!
 !####################################################################
 !
 !====================================================================
@@ -34,7 +34,7 @@
 !              interval, otherwise the sub stops
 !DEPENDENCY:   none
 !ON ENTRY:
-!  INTEGER n(1), g(1), nsize(g), dec(1) 
+!  INTEGER n(1), g(1), nsize(g), dec(1)
 !  REAL v(1), k(1), kappa(1), lower(1), upper(1), tol(1), res(n)
 !ON RETURN
 !  INTEGER info(1)
@@ -42,7 +42,7 @@
 !--------------------------------------------------------------------
 !
 SUBROUTINE drsaehubdestiter(n, g, nsize, v, k, kappa, res, lower, upper, &
-      tol, zeroin, info, dec, decorr) 
+      tol, zeroin, info, dec, decorr)
    IMPLICIT NONE
    !zeroin declarations
    INTEGER, INTENT(OUT) :: info  !info was not in Richard's original
@@ -60,13 +60,13 @@ SUBROUTINE drsaehubdestiter(n, g, nsize, v, k, kappa, res, lower, upper, &
    DOUBLE PRECISION :: a, b, c, d, e, fa, fb, fc, tol1, xm, p, q, r, s
    !define a precision constant, cf R .Machine$double.eps for double
    !data type, i.e., 64bit sized blocks
-   DOUBLE PRECISION, PARAMETER :: EPS = 2.3E-16 
+   DOUBLE PRECISION, PARAMETER :: EPS = 2.3E-16
    !initialize
    info = 0
    !start with checking whether there is a sign change, if not break
    a = lower
    b = upper
-   !note that these function calls have been added to Richard's 
+   !note that these function calls have been added to Richard's
    !original code
    !compute fa (i.e., evaluation for a = lower)
    CALL drsaehubdest(n, g, nsize, a, v, k, kappa, res, fa, dec, decorr)
@@ -77,7 +77,7 @@ SUBROUTINE drsaehubdestiter(n, g, nsize, v, k, kappa, res, lower, upper, &
       !return -1; this violates the assumption and therefore be detected
       info = -1
       zeroin = 0D0
-   ELSE   
+   ELSE
       c = b
       fc = fb
       DO iter = 1,ITMAX
@@ -136,7 +136,7 @@ SUBROUTINE drsaehubdestiter(n, g, nsize, v, k, kappa, res, lower, upper, &
          END IF
          a = b
          fa = fb
-         !note merge and sign work that way in gfortran (which may no 
+         !note merge and sign work that way in gfortran (which may no
          !be true
          !for others; I did not check it)
          b = b + MERGE(d, SIGN(tol1, xm), ABS(d) > tol1)
@@ -146,11 +146,11 @@ SUBROUTINE drsaehubdestiter(n, g, nsize, v, k, kappa, res, lower, upper, &
          CALL drsaehubdest(n, g, nsize, b, v, k, kappa, res, fb, dec,&
             decorr)
       END DO
-      !return b; however, it did not converge, therefore info=0, still 
+      !return b; however, it did not converge, therefore info=0, still
       zeroin = b
    END IF
-END SUBROUTINE 
-!  
+END SUBROUTINE
+!
 !####################################################################
 ! EOF rsaeext.f90
-!#################################################################### 
+!####################################################################
