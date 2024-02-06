@@ -31,8 +31,8 @@ makedata(seed = 1024, intercept = 1, beta = 1, n = 4, g = 20, areaID = NULL,
     \item{ve}{\code{[numeric]} nonnegative value of model/ residual variance.}
     \item{ve.contam}{\code{[numeric]} nonnegative value of model variance of
         the outlier part in a mixture distribution (Tukey-Huber-type
-        contamination model) \eqn{e = (1-h)N(0, ve) + hN(0, ve.contam)}
-        {e = (1-h)*N(0, ve) + h*N(0, ve.contam)}.}
+        contamination model) \eqn{e = (1-h)N(0, ve) + hN(0, ve.contam)
+            }{e = (1-h)*N(0, ve) + h*N(0, ve.contam)}.}
     \item{ve.epsilon}{\code{[numeric]} value in \eqn{[0,1]}{[0,1]} that
         defines the relative number of outliers (i.e., epsilon or h in
         the contamination mixture distribution). Typically, it takes
@@ -94,7 +94,7 @@ makedata(seed = 1024, intercept = 1, beta = 1, n = 4, g = 20, areaID = NULL,
 \references{
 Schoch, T. (2012). Robust Unit-Level Small Area Estimation: A Fast Algorithm
     for Large Datasets. \emph{Austrian Journal of Statistics} \bold{41},
-    243--265. \url{http://www.stat.tugraz.at/AJS/ausg124/124Schoch.pdf}
+    243--265. \doi{https://doi.org/10.17713/ajs.v41i4.1548}
 
 Stahel, W. A. and A. Welsh (1997).
     Approaches to robust estimation in the simplest variance components model.
@@ -106,5 +106,10 @@ Stahel, W. A. and A. Welsh (1997).
     \code{\link[=fitsaemodel]{fitsaemodel()}}
 }
 \examples{
-mymodel <- makedata()
+# generate a model with synthetic data
+model <- makedata()
+model
+
+# summary of the model
+summary(model)
 }

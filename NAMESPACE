@@ -1,10 +1,15 @@
+# load shared objects; registration is via src/init.c file; the names of the
+# registered symbols have prefix "C_" such that they are easily recognizable
+useDynLib(rsae, .registration = TRUE, .fixes = "C_")
+
 # import
 importFrom("graphics",
-    "par", "lines", "axis", "grid", "box", "legend", "arrows")
+    par, lines, axis, grid, box, legend, arrows)
 importFrom("stats",
-    "model.frame", "model.response", "model.matrix", "pnorm", "dnorm", "rnorm",
-    "pt", "printCoefmat", "median")
-importFrom("utils", "setTxtProgressBar", "txtProgressBar")
+    model.frame, model.response, model.matrix, pnorm, dnorm, rnorm, pt,
+    printCoefmat, median)
+importFrom("utils",
+    head, setTxtProgressBar, tail, txtProgressBar)
 
 # saemodel
 export(saemodel)
@@ -26,10 +31,10 @@ export(robpredict)
 S3method(print, pred_model_b)
 S3method(plot, pred_model_b)
 S3method(residuals, pred_model_b)
+S3method(as.matrix, pred_model_b)
+S3method(head, pred_model_b)
+S3method(tail, pred_model_b)
 
 # varia
 export(convergence)
 export(makedata)
-
-#register the dll
-useDynLib(rsae, .registration = TRUE)

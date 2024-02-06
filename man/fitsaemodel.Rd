@@ -33,7 +33,7 @@ convergence(object)
         \code{print()} and \code{summary()} methods.}
     \item{object}{an object of class \code{"fit_model_b"}.}
     \item{x}{an object of class \code{"fit_model_b"}.}
-    \item{type}{\code{[character]} name effects to be extracted
+    \item{type}{\code{[character]} name of the effects to be extracted
         by the \code{coef} method; it can take one of the
         following possibilities: \code{"both"} (extracts fixed and random
         effects; default), \code{"ranef"} (only random effects), or
@@ -83,9 +83,10 @@ convergence(object)
     }
     \subsection{Implementation}{
         The methods are computed by (nested) iteratively re-weighted least
-        squares and Brent's \code{zeroin} method (Brent, 1973). The
-        functions depend on the subroutines in BLAS (Blackford et al., 2002)
-        and LAPACK (Anderson et al., 2000); see Schoch (2012).
+        squares and a derivative of Richard Brent's \code{zeroin} algorithm;
+        see Brent (2013, Chapter 4). The functions depend on the subroutines in
+        BLAS (Blackford et al., 2002) and LAPACK (Anderson et al., 2000); see
+        Schoch (2012).
     }
 }
 \value{
@@ -102,8 +103,10 @@ Blackford, L.S., Petitet, A., Pozo, R., Remington, K., Whaley, R.C.,
     \emph{ACM Transactions on Mathematical Software} \bold{28}, 135--151.
     \doi{https://doi.org/10.1145/567806.567807}
 
-Brent, R.P. (1973). \emph{Algorithms for minimization without derivatives}.
-    Englewood Cliffs, NJ: Prentice-Hall.
+Brent, R.P. (2013). \emph{Algorithms for minimization without derivatives}.
+    Mineola (NY): Dover Publications Inc. (This publication is an unabridged
+    republication of the work originally published by Prentice-Hall Inc.,
+    Englewood Cliffs, NJ, in 1973).
 
 Maechler, M., Rousseeuw, P., Croux, C., Todorov, V., Ruckstuhl, A.,
     Salibian-Barrera, M., Verbeke, T., Koller, M., Conceicao, E.L.T. and
@@ -126,20 +129,43 @@ Rousseeuw, P. J. and K. Van Driessen (2006).
 
 Schoch, T. (2012). Robust Unit-Level Small Area Estimation: A Fast Algorithm
     for Large Datasets. \emph{Austrian Journal of Statistics} \bold{41},
-    243--265. \url{http://www.stat.tugraz.at/AJS/ausg124/124Schoch.pdf}
+    243--265. \doi{https://doi.org/10.17713/ajs.v41i4.1548}
 }
 \seealso{
     \code{\link[=fitsaemodel.control]{fitsaemodel.control()}}
 }
 
 \examples{
-# generate synthetic data
-m <- makedata()
+# use the landsat data
+head(landsat)
+
+# define the saemodel using the landsat data
+model <- saemodel(formula = HACorn ~ PixelsCorn + PixelsSoybeans,
+    area = ~CountyName,
+    data = subset(landsat, subset = (outlier == FALSE)))
+
+# summary of the model
+summary(model)
+
+# maximum likelihood estimates
+fitsaemodel("ml", model)
 
 # Huber M-estimate with robustness tuning constant k = 2
-m_fitted <- fitsaemodel("huberm", m, k = 2)
-m_fitted
+m <- fitsaemodel("huberm", model, k = 2)
+m
 
-# summary of the fitted model
-summary(m_fitted)
+# summary of the fitted model/ estimates
+summary(m)
+
+# obtain more information about convergence
+convergence(m)
+
+# extract the fixed effects
+coef(m, "fixef")
+
+# extract the random effects
+coef(m, "ranef")
+
+# extract both
+coef(m)
 }
